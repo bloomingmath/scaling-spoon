@@ -9,6 +9,12 @@ class TestDatabase(unittest.TestCase):
     @db_session
     def setUpClass(cls):
         hpw = authentication.hash_password('randomsalt', 'pass')
+        db.Group.select().delete(bulk=True)
+        db.User.select().delete(bulk=True)
+        db.Node.select().delete(bulk=True)
+        db.MultipleChoiceQuestion.select().delete(bulk=True)
+        db.Content.select().delete(bulk=True)
+
         db.Group(short='admin')
         db.Group(short='teacher')
         for i in range(6):

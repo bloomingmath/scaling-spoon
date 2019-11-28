@@ -14,8 +14,7 @@
   <link href="/public/bootstrap/css/bootstrap.min.css" rel="stylesheet" />
   <link href="/public/style/main_style.css" rel="stylesheet" />
   <link href="/public/style/react_navbar.css" rel="stylesheet" />
-  <!-- <link rel="stylesheet" type="text/css" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css"> -->
-  <link rel="stylesheet" type="text/css" href="/public/style/font-awesome.min.css">
+  <link rel="stylesheet" type="text/css" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
   <script type="text/x-mathjax-config">
     MathJax.Hub.Config({
       tex2jax: {
@@ -34,9 +33,6 @@
   <script src="https://unpkg.com/react@16/umd/react.development.js" crossorigin></script>
   <script src="https://unpkg.com/react-dom@16/umd/react-dom.development.js" crossorigin></script>
   <script src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
-  <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/qs/6.9.0/qs.min.js" integrity="sha256-IREbso/y8eqFepOtwhyQDzHY2N3rguIuh7auiaq1ePE=" crossorigin="anonymous"></script>
-  <script src="https://cdn.jsdelivr.net/npm/js-cookie@beta/dist/js.cookie.min.js"></script>
 </head>
 
 <body>
@@ -45,7 +41,14 @@
   <div class="container" id="react_navbar_container"></div>
 
   <!-- Page Content -->
-  <div class="container" id="react_mainpage_container">
+  <div class="container">
+    <div class="row">
+      <div class="col-12">
+        <h1>Benvenut@ Eternauta</h1>
+        <p>Per utilizzare l'applicazione accedi al tuo profilo.</p>
+        <p>Se non hai già un profilo, <a href="/signup">registrati</a>.</p>
+      </div>
+    </div>
   </div>
 
   <!-- Bootstrap core JavaScript -->
@@ -54,7 +57,6 @@
 
   <!-- Load React Component -->
   <script type="text/babel" src="/public/react/react_navbar.js"></script>
-  <script type="text/babel" src="/public/react/react_mainpage.js"></script>
 </body>
 
 </html>

@@ -1,3 +1,4 @@
+from .auth_api import *
 from .ponydb import *
 import unittest
 
