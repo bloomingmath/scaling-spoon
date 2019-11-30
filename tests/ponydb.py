@@ -1,6 +1,6 @@
 from ponydb import db_session, select
 from ponydb import test_db as db
-import authentication
+import old_authentication
 import shutil
 import unittest
 
@@ -8,7 +8,7 @@ class TestDatabase(unittest.TestCase):
     @classmethod
     @db_session
     def setUpClass(cls):
-        hpw = authentication.hash_password('randomsalt', 'pass')
+        hpw = old_authentication.hash_password('randomsalt', 'pass')
         db.Group.select().delete(bulk=True)
         db.User.select().delete(bulk=True)
         db.Node.select().delete(bulk=True)
@@ -39,21 +39,21 @@ class TestDatabase(unittest.TestCase):
 
         for i in range(100):
             short = 'node%02i' % i
-            n = db.Node(serial=authentication.get_serial(short), short=short)
+            n = db.Node(serial=old_authentication.get_serial(short), short=short)
             for j in range(1, i):
                 if i % j == 0:
                     n.antes.add(db.Node.get(short='node%02i' % j))
             for j in range(6):
                 qshort = 'question number %i for node%02i' % (j, i)
                 qlong = 'Question that expect answer %i' % j
-                qserial = authentication.get_serial(qshort)
+                qserial = old_authentication.get_serial(qshort)
                 qoptions = [ 'it\'s {}'.format(j+k) for k in range(4) ]
                 db.MultipleChoiceQuestion(serial=qserial, short=qshort, long=qlong, options=qoptions, node=n)
 
         for filetype in ['md', 'png', 'pdf', 'mp4']:
             n = db.Node.select().first()
             cshort = 'content of type %s' % filetype
-            cserial = authentication.get_serial(cshort)
+            cserial = old_authentication.get_serial(cshort)
             shutil.copy("static/contents/content_example.%s" % filetype, "static/contents/%s.%s" % (cserial, filetype))
             db.Content(serial=cserial, short=cshort, node=n, filetype=filetype)
 

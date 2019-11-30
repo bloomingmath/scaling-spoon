@@ -1,4 +1,4 @@
-import authentication
+import old_authentication
 import json
 from pony.orm import commit
 import requests
@@ -18,7 +18,7 @@ class TestAuthApi(unittest.TestCase):
             username='olduser',
             email='olduser@example.com',
             salt='randomsalt',
-            hashed=authentication.hash_password('randomsalt', 'pass')
+            hashed=old_authentication.hash_password('randomsalt', 'pass')
         )
 
     def test_good_registration(self):

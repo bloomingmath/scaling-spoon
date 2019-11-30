@@ -7,6 +7,7 @@ from datetime import timedelta
 from fastapi import Cookie
 from fastapi import Depends
 from fastapi import FastAPI
+from fastapi import Form
 from fastapi import HTTPException
 from ponydb import db_session, commit
 from ponydb import test_db as db
@@ -22,20 +23,28 @@ from starlette.templating import Jinja2Templates
 
 app = FastAPI()
 app.mount("/static", StaticFiles(directory="static"), name="static")
-app.mount("/public", StaticFiles(directory="reactfrontend/public"), name="frontend")
+app.mount("/public", StaticFiles(directory=".reactfrontend/public"), name="frontend")
 app.mount("/templates", StaticFiles(directory="templates"), name="templates")
 
 templates = Jinja2Templates(directory="templates")
 
+
+@app.get("/test")
+async def test():
+    with db_session:
+        db.User.get(username="olduser").delete()
+    return auth.get_db_user_or_none(db, username="olduser").to_dict()
+
+
 @app.get("/")
 async def render_root(request: Request, access_token: str = Cookie(None)):
-    current_user = auth.get_current_user_or_none(access_token)
-    print("current user:", current_user)
+    current_user = auth.get_user_by_access_token_or_none(db=db, token=access_token)
     return templates.TemplateResponse("index.html", {"request": request, "current_user": current_user})
 
+
 @app.post("/login")
-async def login(form_data: auth.OAuth2PasswordRequestForm = Depends()):
-    user = auth.authenticate_user(db, form_data.username, form_data.password)
+async def login(username: str = Form(...), password: str = Form(...)):
+    user = auth.get_user_by_username_and_password_or_none(db, username, password)
     response = RedirectResponse(url="/", status_code=303)
     if not user:
         raise HTTPException(
@@ -44,11 +53,12 @@ async def login(form_data: auth.OAuth2PasswordRequestForm = Depends()):
             headers={"WWW-Authenticate": "Bearer"},
         )
     access_token_expires = timedelta(minutes=auth.ACCESS_TOKEN_EXPIRE_MINUTES)
-    access_token = auth.create_access_token(
-        data={"sub": user.username}, expires_delta=access_token_expires
+    access_token = auth.generate_access_token(
+        username=user.username, expires_delta=access_token_expires
     )
     response.set_cookie('access_token', access_token, expires=36000)
     return response
+
 
 @app.post("/logout")
 async def logout():
@@ -57,51 +67,47 @@ async def logout():
     return response
 
 
-@app.post("/token", response_model=auth.Token)
-async def login_for_access_token(form_data: auth.OAuth2PasswordRequestForm = Depends()):
-    user = auth.authenticate_user(db, form_data.username, form_data.password)
+@app.post("/token")
+async def login_for_access_token(username: str = Form(...), password: str = Form(...)):
+    user = auth.get_user_by_username_and_password_or_none(db, username, password)
     if not user:
         raise HTTPException(
             status_code=HTTP_401_UNAUTHORIZED,
             detail="Incorrect username or password",
             headers={"WWW-Authenticate": "Bearer"},
         )
-    access_token_expires = timedelta(minutes=auth.ACCESS_TOKEN_EXPIRE_MINUTES)
-    access_token = auth.create_access_token(
-        data={"sub": user.username}, expires_delta=access_token_expires
-    )
+    access_token = auth.generate_access_token(username=user.username)
     return {"access_token": access_token, "token_type": "bearer"}
 
-@app.post("/register", response_model=auth.Token)
-async def register_for_access_token(form_data: auth.OAuth2RegistrationRequestForm = Depends()):
-    print("At least here:")
-    prexisting_user = auth.get_user(db, username=form_data.username)
-    if prexisting_user:
+
+@app.post("/register")
+async def register_for_access_token(username: str = Form(...), email: str = Form(...), password1: str = Form(...),
+                                    password2: str = Form(...), fullname: str = Form("")):
+    preexisting_user = auth.get_db_user_or_none(db, username=username)
+    if preexisting_user:
         raise HTTPException(
             status_code=HTTP_403_FORBIDDEN,
             detail="Username already exists",
         )
-    prexisting_user = auth.get_user(db, email=form_data.email)
-    if prexisting_user:
+    preexisting_user = auth.get_db_user_or_none(db, email=email)
+    if preexisting_user:
         raise HTTPException(
             status_code=HTTP_403_FORBIDDEN,
             detail="Email address already used",
         )
-    salt = auth.get_salt()
-    if form_data.password1==form_data.password2:
-        hashed = auth.hash_password(salt, form_data.password2)
+    salt = auth.generate_salt()
+    if password1 == password2:
+        hashed = auth.hash_password(salt, password2)
     else:
         raise HTTPException(
             status_code=HTTP_403_FORBIDDEN,
             detail="Passwords do not coincide",
         )
-    new_user = auth.create_user(username=form_data.username, email=form_data.email, salt=salt, hashed=hashed, fullname=form_data.fullname)
-    access_token_expires = timedelta(minutes=auth.ACCESS_TOKEN_EXPIRE_MINUTES)
-    access_token = auth.create_access_token(
-        data={"sub": new_user.username}, expires_delta=access_token_expires
-    )
+    auth.create_db_user(db, username=username, email=email, salt=salt, hashed=hashed, fullname=fullname)
+    access_token = auth.generate_access_token(username=username)
     return {"access_token": access_token, "token_type": "bearer"}
 
+
 @app.get("/login_proof/")
-async def login_proof(current_user: auth.User = Depends(auth.get_current_user)):
+async def login_proof(current_user):
     return {"current_user": current_user}
