@@ -12,7 +12,6 @@ Vengono utilizzati i seguenti software:
  * git -- https://git-scm.com/
  * python 3.6.8 -- https://www.python.org/
  * pycharm -- https://www.jetbrains.com/pycharm/
- * ~~react -- https://reactjs.org/docs/getting-started.html~~
  * virtualenv -- https://virtualenv.pypa.io/en/latest/
  * tutte le librerie elencate nel file requirements.txt che si possono installare direttamente con il comando `pip install -r requirements.txt`
  
