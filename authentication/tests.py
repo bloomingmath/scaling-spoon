@@ -1,3 +1,9 @@
+import os
+
+if os.environ.get("SCALING_SPOON_PRODUCTION"):
+    # raise Exception("Do not run tests with production database")
+    del os.environ["SCALING_SPOON_PRODUCTION"]
+
 import ponydb
 import unittest
 import authentication

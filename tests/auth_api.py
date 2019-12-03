@@ -1,12 +1,12 @@
-import old_authentication
+import authentication
 import json
 from pony.orm import commit
 import requests
 import shutil
 import unittest
 
-from ponydb import db_session, select
-from ponydb import test_db as db
+from ponydb import db_session
+from ponydb import db
 
 ROOT_URL = "http://127.0.0.1:8000"
 
@@ -18,7 +18,7 @@ class TestAuthApi(unittest.TestCase):
             username='olduser',
             email='olduser@example.com',
             salt='randomsalt',
-            hashed=old_authentication.hash_password('randomsalt', 'pass')
+            hashed=authentication.hash_password('randomsalt', 'pass')
         )
 
     def test_good_registration(self):

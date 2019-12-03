@@ -30,7 +30,7 @@ def get_db_user_or_none(db: Database, **kwargs: Any) -> Optional[db.User]:
         db_user = db.User.get(**kwargs)
         return db_user
     except Exception as err:
-        print("In get_db_user_or_none exception:", err)
+        # print("In get_db_user_or_none exception:", err)
         return None
 
 

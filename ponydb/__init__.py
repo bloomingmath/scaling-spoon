@@ -1,7 +1,10 @@
 from .models import *
+import os
 
-db = define_database(provider='sqlite', filename='database.sqlite', create_db=True)
-#db = define_database(provider='sqlite', filename='database.sqlite', create_db=True)
-test_db = define_database(provider='sqlite', filename='test_database.sqlite', create_db=True)
+if os.environ.get("SCALING_SPOON_PRODUCTION"):
+    print("Warning: using production database. Do not run tests.")
+    db = define_database(provider='sqlite', filename='database.sqlite', create_db=True)
+else:
+    db = define_database(provider='sqlite', filename=':memory:', create_db=True)
 
-__all__ = ['db', 'db_session', 'select', 'test_db']
+__all__ = ['db', 'db_session']

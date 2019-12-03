@@ -10,7 +10,7 @@ from fastapi import FastAPI
 from fastapi import Form
 from fastapi import HTTPException
 from ponydb import db_session, commit
-from ponydb import test_db as db
+from ponydb import db
 from pydantic import BaseModel
 from starlette.requests import Request
 from starlette.responses import HTMLResponse
@@ -23,17 +23,65 @@ from starlette.templating import Jinja2Templates
 
 app = FastAPI()
 app.mount("/static", StaticFiles(directory="static"), name="static")
-app.mount("/public", StaticFiles(directory=".reactfrontend/public"), name="frontend")
 app.mount("/templates", StaticFiles(directory="templates"), name="templates")
 
 templates = Jinja2Templates(directory="templates")
 
 
+### API ENDPOINTS ###
+
+@app.post("/api/signin")
+async def api_signin(username: str = Form(...), password: str = Form(...)):
+    user = auth.get_user_by_username_and_password_or_none(db, username, password)
+    if not user:
+        raise HTTPException(
+            status_code=HTTP_401_UNAUTHORIZED,
+            detail="Incorrect username or password",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    access_token = auth.generate_access_token(username=user.username)
+    return {"access_token": access_token, "token_type": "bearer"}
+
+
+@app.post("/api/signup")
+async def api_signup(username: str = Form(...), email: str = Form(...), password1: str = Form(...),
+                     password2: str = Form(...), fullname: str = Form("")):
+    preexisting_user = auth.get_db_user_or_none(db, username=username)
+    if preexisting_user:
+        raise HTTPException(
+            status_code=HTTP_403_FORBIDDEN,
+            detail="Username already exists",
+        )
+    preexisting_user = auth.get_db_user_or_none(db, email=email)
+    if preexisting_user:
+        raise HTTPException(
+            status_code=HTTP_403_FORBIDDEN,
+            detail="Email address already used",
+        )
+    salt = auth.generate_salt()
+    if password1 == password2:
+        hashed = auth.hash_password(salt, password2)
+    else:
+        raise HTTPException(
+            status_code=HTTP_403_FORBIDDEN,
+            detail="Passwords do not coincide",
+        )
+    auth.create_db_user(db, username=username, email=email, salt=salt, hashed=hashed, fullname=fullname)
+    return {"detail": "User {} has been signed up.".format(username)}
+
+
+from adminapi import setup_admin_api
+
+setup_admin_api(app, db, db_session)
+
+
+### FRONTEND ENDPOINTS
+
 @app.get("/test")
 async def test():
     with db_session:
-        db.User.get(username="olduser").delete()
-    return auth.get_db_user_or_none(db, username="olduser").to_dict()
+        db.User(username="user", email="email", salt="salt", hashed="hashed")
+    return "done"
 
 
 @app.get("/")
