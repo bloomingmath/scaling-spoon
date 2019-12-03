@@ -30,17 +30,17 @@ class TestAuthentication(unittest.TestCase):
         self.assertEqual("user@example.com", authentication.get_db_user_or_none(db, username="user").to_dict()["email"])
 
     def test_create_db_user(self):
-        self.assertIsNone(authentication.get_db_user_or_none(db, username="other"))
+        self.assertIsNone(authentication.get_db_user_or_none(db, username="otheruser"))
         authentication.create_db_user(
             db=db,
-            username="other",
-            email="other@example.com",
+            username="otheruser",
+            email="otheruser@example.com",
             salt="2a32b895a0f259276050f38565381b99e22a6d65db06eaf453b7df51eaf41dc5",
             hashed=authentication.helpers.hash_password('2a32b895a0f259276050f38565381b99e22a6d65db06eaf453b7df51eaf41dc5',
                                                         'pass'),
             fullname="Other User"
         )
-        self.assertIsNotNone(authentication.get_db_user_or_none(db, username="other"))
+        self.assertIsNotNone(authentication.get_db_user_or_none(db, username="otheruser"))
 
     def test_get_user_by_username_and_password_or_none(self):
         self.assertIsNotNone(authentication.get_user_by_username_and_password_or_none(db, "user", "pass"))

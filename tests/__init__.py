@@ -1,15 +1,13 @@
+# from .auth_api import *
+from authentication.tests import *
+from requests import get
+from requests import post
 import os
+import unittest
 
 if os.environ.get("SCALING_SPOON_PRODUCTION"):
     # raise Exception("Do not run tests with production database")
     del os.environ["SCALING_SPOON_PRODUCTION"]
-
-from authentication.tests import *
-
-# from .auth_api import *
-import unittest
-from requests import get
-from requests import post
 
 ROOT_URL = "http://127.0.0.1:8000"
 
@@ -64,7 +62,6 @@ class TestHtmlFrontend(unittest.TestCase):
     def test_root_page(self):
         resp = get("{}/".format(ROOT_URL))
         self.assertIn('<a class="navbar-brand" href="#">Bloomingmath</a>', resp.text)
-
 
 
 if __name__ == "__main__":

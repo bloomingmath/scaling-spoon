@@ -70,9 +70,9 @@ async def api_signup(username: str = Form(...), email: str = Form(...), password
     return {"detail": "User {} has been signed up.".format(username)}
 
 
-from adminapi import setup_admin_api
+from routers import admin_api
 
-setup_admin_api(app, db, db_session)
+app.include_router(admin_api.router, tags=["admin-api"], prefix="/api/admin")
 
 
 ### FRONTEND ENDPOINTS
