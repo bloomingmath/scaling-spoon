@@ -1,10 +1,11 @@
 from .models import *
-import os
+import functools
 
-if os.environ.get("SCALING_SPOON_PRODUCTION"):
-    print("Warning: using production database. Do not run tests.")
-    db = define_database(provider='sqlite', filename='database.sqlite', create_db=True)
-else:
-    db = define_database(provider='sqlite', filename=':memory:', create_db=True)
+# TODO change this for production
+std_db = define_database(provider="sqlite", filename=":memory:", create_db=True)
+# test_db = define_database(provider="sqlite", filename=":memory:", create_db=True)
 
-__all__ = ['db', 'db_session']
+# std_db = functools.partial(define_database, provider="sqlite", filename="database.sqlite", create_db=True)
+test_db = functools.partial(define_database, provider="sqlite", filename=":memory:", create_db=True)
+
+__all__ = ["db_session", "std_db", "test_db"]

@@ -1,5 +1,5 @@
 from fastapi import APIRouter
-from ponydb import db
+from ponydb import std_db as db
 from ponydb import db_session
 
 router = APIRouter()

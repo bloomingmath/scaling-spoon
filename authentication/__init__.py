@@ -8,8 +8,8 @@ from datetime import timedelta
 
 from pony.orm import Database
 
-from ponydb import db
 from ponydb import db_session
+from ponydb import std_db as db
 
 from typing import Any
 from typing import Optional
@@ -17,7 +17,7 @@ from typing import Optional
 import jwt
 import os
 
-SECRET_KEY = os.getenv('BLOOMINGMATH_SECRET_KEY', 'development_key')
+SECRET_KEY = os.getenv("BLOOMINGMATH_SECRET_KEY", "development_key")
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 30
 

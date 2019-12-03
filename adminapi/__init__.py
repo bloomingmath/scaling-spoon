@@ -43,7 +43,6 @@ async def wfunc({kw}, **kwargs):
     return "{kw} is %s... " % {kw} + await func(**kwargs)
 """.format(kw=kw, kwt=kwt), d)
                 d["wfunc"].__annotations__.update(pre_annotation)
-                print("wfunc signature", forge.fsignature(d["wfunc"]))
                 return d["wfunc"]
 
             async def api_admin_create():

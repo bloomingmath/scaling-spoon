@@ -1,15 +1,22 @@
-# from .auth_api import *
-from authentication.tests import *
+# from authentication.test_authentication import *
 from requests import get
 from requests import post
 import os
 import unittest
 
 if os.environ.get("SCALING_SPOON_PRODUCTION"):
-    # raise Exception("Do not run tests with production database")
     del os.environ["SCALING_SPOON_PRODUCTION"]
 
 ROOT_URL = "http://127.0.0.1:8000"
+
+from starlette.testclient import TestClient
+from main import app
+from ponydb import test_db
+from ponydb import db_session
+import authentication
+
+db = test_db()
+client = TestClient(app)
 
 
 class TestApi(unittest.TestCase):
@@ -18,19 +25,19 @@ class TestApi(unittest.TestCase):
     Before testing, start the server with
     $ uvicorn main:app --reload
     """
-    from ponydb import db
-    from ponydb import db_session
-    import authentication
-
-    @classmethod
-    @db_session
-    def setUpClass(cls):
-        db.Group(short='*admin')
-        db.User(username='admin', email='admin@example.com', salt='randomsalt',
-                hashed=authentication.hash_password('randomsalt', 'pass'))
+    #
+    # @classmethod
+    # @db_session
+    # def setUpClass(cls):
+    #     try:
+    #         db.Group(short='*admin')
+    #         db.User(username='admin', email='admin@example.com', salt='randomsalt',
+    #                 hashed=authentication.hash_password('randomsalt', 'pass'))
+    #     except:
+    #         print("psss...")
 
     def test_api_authentication(self):
-        resp = post("{}/api/signup".format(ROOT_URL), data={
+        resp = client.post("{}/api/signup".format(ROOT_URL), data={
             "username": "reguser",
             "email": "reguser@example.com",
             "password1": "pass",
@@ -38,29 +45,17 @@ class TestApi(unittest.TestCase):
             "fullname": "User Registered",
         })
         self.assertEqual(resp.status_code, 200)
-        resp = post("{}/api/signin".format(ROOT_URL), data={
+        resp = client.post("{}/api/signin".format(ROOT_URL), data={
             "username": "reguser",
             "password": "pass",
         })
         self.assertEqual(resp.status_code, 200)
         self.assertIn("access_token", resp.json().keys())
 
-    def test_admin_api(self):
-        pass
-
 
 class TestHtmlFrontend(unittest.TestCase):
-    """
-    This TestCase is supposed to work with a running instance of the app.
-    Before testing, start the server with
-    $ uvicorn main:app --reload
-    """
-
-    def setUp(self):
-        assert os.environ.get("SCALING_SPOON_PRODUCTION") is None
-
     def test_root_page(self):
-        resp = get("{}/".format(ROOT_URL))
+        resp = client.get("{}/".format(ROOT_URL))
         self.assertIn('<a class="navbar-brand" href="#">Bloomingmath</a>', resp.text)
 
 

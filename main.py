@@ -10,7 +10,7 @@ from fastapi import FastAPI
 from fastapi import Form
 from fastapi import HTTPException
 from ponydb import db_session, commit
-from ponydb import db
+from ponydb import std_db as db
 from pydantic import BaseModel
 from starlette.requests import Request
 from starlette.responses import HTMLResponse
@@ -20,6 +20,8 @@ from starlette.status import HTTP_400_BAD_REQUEST
 from starlette.status import HTTP_401_UNAUTHORIZED
 from starlette.status import HTTP_403_FORBIDDEN
 from starlette.templating import Jinja2Templates
+
+import sandbox
 
 app = FastAPI()
 app.mount("/static", StaticFiles(directory="static"), name="static")
@@ -70,9 +72,9 @@ async def api_signup(username: str = Form(...), email: str = Form(...), password
     return {"detail": "User {} has been signed up.".format(username)}
 
 
-from routers import admin_api
-
-app.include_router(admin_api.router, tags=["admin-api"], prefix="/api/admin")
+# from routers import admin_api
+#
+# app.include_router(admin_api.router, tags=["admin-api"], prefix="/api/admin")
 
 
 ### FRONTEND ENDPOINTS

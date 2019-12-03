@@ -8,7 +8,7 @@ import ponydb
 import unittest
 import authentication
 
-db = ponydb.define_database(provider='sqlite', filename=':memory:', create_db=True)
+db = ponydb.test_db()
 with ponydb.db_session:
     db.User.select().delete(bulk=True)
     db.User(

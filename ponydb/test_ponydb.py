@@ -1,8 +1,10 @@
 from ponydb import db_session, select
-from ponydb import db
+from ponydb import test_db
 import authentication
 import shutil
 import unittest
+
+db = test_db()
 
 class TestDatabase(unittest.TestCase):
     @classmethod
