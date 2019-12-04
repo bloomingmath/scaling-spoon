@@ -1,63 +1,85 @@
 from fastapi import APIRouter
-from ponydb import std_db as db
+from fastapi import HTTPException
 from ponydb import db_session
+from starlette.status import HTTP_400_BAD_REQUEST
 
-router = APIRouter()
 
-# def setup_admin_api(router, db, db_session):
-for name, model in db.entities.items():
-    def make_list_endpoint(model):
-        async def api_admin_list():
-            with db_session:
-                _list = [obj.to_dict() for obj in model.select()]
-            return _list
+def make_router(db):
+    router = APIRouter()
 
-        return api_admin_list
+    for name, model in db.entities.items():
+        def make_detail_endpoint(db_model):
+            async def api_admin_detail(id: int):
+                with db_session:
+                    return db_model.get(id=id).to_dict()
 
-    router.add_api_route("/{}".format(name.lower()), make_list_endpoint(model))
+            api_admin_detail.__name__ = f"api_admin_{name.lower()}_detail"
+            return api_admin_detail
 
-    def make_detail_endpoint(model):
-        async def api_admin_detail(id: int):
-            with db_session:
-                return model.get(id=id).to_dict()
+        router.add_api_route(f"/{name.lower()}/{{id}}", make_detail_endpoint(model))
 
-        return api_admin_detail
-
-    router.add_api_route("/%s/{id}" % name.lower(), make_detail_endpoint(model))
-
-    def make_create_endpoint(model):
-        from fastapi import Depends
-        from fastapi import Form
-
-        required_kwargs = { kw:getattr(model, kw).py_type for kw in dir(model)
-                           if hasattr(getattr(model, kw), 'is_required')
-                           and getattr(model, kw).is_required
-                           and not getattr(model, kw).is_pk
-                            and getattr(model, kw).py_type in (int, str) }
-
-        def async_kwarg_wrap(func, kw, kwt):
-            import functools
+        def make_read_endpoint(db_model):
             import forge
-            d = {'func': func, 'kw': kw, 'functools': functools, 'forge':forge, 'kwt': kwt}
-            pre_annotation = func.__annotations__
-            exec("""
-@forge.sign(
-    forge.kwo('{kw}', type=kwt),
-    *forge.fsignature(func)
-)
-async def wfunc({kw}, **kwargs):
-    return "{kw} is %s... " % {kw} + await func(**kwargs)
-""".format(kw=kw, kwt=kwt), d)
-            d["wfunc"].__annotations__.update(pre_annotation)
-            print("wfunc signature", forge.fsignature(d["wfunc"]))
-            return d["wfunc"]
+            parameter_list = [forge.kwo(name=param,
+                                        type=(int if param == 'id' else str),
+                                        default=None)
+                              for param in ("id", "username", "email", "serial", "short", "filetype")]
 
-        async def api_admin_create():
-            return "stop"
+            @forge.sign(*parameter_list)
+            async def api_admin_read(**kwargs):
+                with db_session:
+                    print("kwargs", kwargs)
+                    query = db_model.select()
+                    print("all", list(query))
+                    for key, value in kwargs.items():
+                        try:
+                            if value is not None:
+                                query = query.filter(lambda obj: getattr(obj, key) == value)
+                        except (ValueError, AttributeError):
+                            pass
+                    return [obj.to_dict() for obj in query]
 
-        for kw, kwt in required_kwargs.items():
-            api_admin_create = async_kwarg_wrap(api_admin_create, kw=kw, kwt=kwt)
+            api_admin_read.__name__ = f"api_admin_{name.lower()}_read"
+            return api_admin_read
 
-        return api_admin_create
+        router.add_api_route(f"/{name.lower()}", make_read_endpoint(model))
 
-    router.add_api_route("/%s" % name.lower(), make_create_endpoint(model), methods=["POST"])
+        def make_create_endpoint(db_model):
+            import forgery
+            import forge
+            from fastapi import Form
+            create_method_signature = forge.fsignature(db_model.create)
+            parameter_list = [forge.kwo(name=par.name,
+                                        type=par.type,
+                                        default=Form(... if par.default == forge.empty else par.default))
+                              for par in create_method_signature]
+
+            # annotations = {
+            #     attr: {"optional": not getattr(db_model, attr).is_required, "type": getattr(db_model, attr).py_type,
+            #            "default": Form(... if getattr(db_model, attr).is_required else None)}
+            #     for attr in dir(db_model)
+            #     if hasattr(getattr(db_model, attr), "is_required")
+            #     and not getattr(db_model, attr).is_pk
+            #     and getattr(db_model, attr).py_type in (int, str)}
+
+            # @forgery.async_kwargs_wrap_decorator(annotations=annotations, context={"Form": Form},
+            #                                      name=f"api_admin_{name.lower()}_create")
+            @forge.sign(*parameter_list)
+            async def api_admin_create(**kwargs):
+                try:
+                    with db_session:
+                        db_model.create(**kwargs)
+                        return {"detail": f"{name} object created."}
+                except Exception as err:
+                    print("Should be", db_model, kwargs)
+                    print("Got error", err)
+                    raise HTTPException(
+                        status_code=HTTP_400_BAD_REQUEST,
+                        detail=str(err),
+                    )
+
+            api_admin_create.__name__ = f"api_admin_{name.lower()}_create"
+            return api_admin_create
+
+        router.add_api_route(f"/{name.lower()}", make_create_endpoint(model), methods=["POST"])
+    return router

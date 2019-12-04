@@ -7,15 +7,18 @@ if os.environ.get("SCALING_SPOON_PRODUCTION"):
 import ponydb
 import unittest
 import authentication
+import helpers.encryption
+from app_factory import make_app
 
-db = ponydb.test_db()
+app, db = make_app()
+
 with ponydb.db_session:
     db.User.select().delete(bulk=True)
     db.User(
         username='user',
         email='user@example.com',
         salt='2a32b895a0f259276050f38565381b99e22a6d65db06eaf453b7df51eaf41dc5',
-        hashed=authentication.helpers.hash_password('2a32b895a0f259276050f38565381b99e22a6d65db06eaf453b7df51eaf41dc5',
+        hashed=helpers.encryption.hash_password('2a32b895a0f259276050f38565381b99e22a6d65db06eaf453b7df51eaf41dc5',
                                                     'pass')
     )
 
@@ -36,7 +39,7 @@ class TestAuthentication(unittest.TestCase):
             username="otheruser",
             email="otheruser@example.com",
             salt="2a32b895a0f259276050f38565381b99e22a6d65db06eaf453b7df51eaf41dc5",
-            hashed=authentication.helpers.hash_password('2a32b895a0f259276050f38565381b99e22a6d65db06eaf453b7df51eaf41dc5',
+            hashed=helpers.encryption.hash_password('2a32b895a0f259276050f38565381b99e22a6d65db06eaf453b7df51eaf41dc5',
                                                         'pass'),
             fullname="Other User"
         )

@@ -35,13 +35,14 @@ async def test_forgery_with_context():
         "gamma": {"default": 23},
         "delta": {"type": str, "default": fastapi.Form(...)},
         "eta": {"type": int, "optional": True},
+        "epsilon": {"type":str, "optional":True, "default": fastapi.Form(...)}
     }
 
     @async_kwargs_wrap_decorator(annotations=fake_annotations, context={'Form': fastapi.Form})
     async def test_function(**kwargs):
         return kwargs
 
-    print(type((await test_function(alpha=0, beta='23'))["delta"]))
     assert isinstance((await test_function(alpha=0, beta='23')), dict)
     assert "delta" in (await test_function(alpha=0, beta='23')).keys()
     assert isinstance((await test_function(alpha=0, beta='23'))["delta"], fastapi.params.Form)
+    assert isinstance((await test_function(alpha=0, beta='23'))["epsilon"], fastapi.params.Form)

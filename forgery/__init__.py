@@ -7,7 +7,7 @@ def _exec_forgery_template(func_name: str="wrapped_function", annotation: dict= 
         if "type" in arguments.keys():
             if arguments.get("optional"):
                 if "default" in arguments.keys():
-                    return f"forge.kwo('{name}', type=Optional[annotations['{name}']['type']], default={arguments['default']})"
+                    return f"forge.kwo('{name}', type=Optional[annotations['{name}']['type']], default=annotations['{name}']['default'])"
                 else:
                     return f"forge.kwo('{name}', type=Optional[annotations['{name}']['type']], default=None)"
             else:
@@ -28,15 +28,16 @@ def _exec_forgery_template(func_name: str="wrapped_function", annotation: dict= 
 
 def async_kwarg_wrap(func, annotations: dict):
     from typing import Optional
-    d = {'func': func, 'annotations': annotations, 'Optional': Optional}
+    d = {"func": func, "annotations": annotations, "Optional": Optional}
     exec(_exec_forgery_template(func.__name__, annotations), d)
-    return d.get(func.__name__) or d['wrapped_function']
+    return d.get(func.__name__) or d["wrapped_function"]
 
-def async_kwargs_wrap_decorator(annotations: dict = {}, context: dict = {}) -> Callable:
+def async_kwargs_wrap_decorator(annotations: dict = {}, context: dict = {}, name: str = None) -> Callable:
     def wrapper(func):
         from typing import Optional
-        exec_globals = {'func': func, 'annotations': annotations, 'Optional': Optional}
+        func_name = name or func.__name__
+        exec_globals = {"func": func, "annotations": annotations, "Optional": Optional}
         exec_globals.update(context)
-        exec(_exec_forgery_template(func.__name__, annotations), exec_globals)
-        return exec_globals.get(func.__name__) or exec_globals['wrapped_function']
+        exec(_exec_forgery_template(func_name, annotations), exec_globals)
+        return exec_globals.get(func_name) or exec_globals.get("wrapped_function")
     return wrapper

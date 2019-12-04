@@ -1,15 +1,10 @@
-from .helpers import generate_salt
-from .helpers import generate_serial
-from .helpers import hash_password
-from .helpers import verify_password
+from helpers.encryption import verify_password
 
 from datetime import datetime
 from datetime import timedelta
 
-from pony.orm import Database
-
+from ponydb import schema
 from ponydb import db_session
-from ponydb import std_db as db
 
 from typing import Any
 from typing import Optional
@@ -21,9 +16,8 @@ SECRET_KEY = os.getenv("BLOOMINGMATH_SECRET_KEY", "development_key")
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 30
 
-
 @db_session
-def get_db_user_or_none(db: Database, **kwargs: Any) -> Optional[db.User]:
+def get_db_user_or_none(db: schema, **kwargs: Any) -> Optional[schema.User]:
     """Given a pony.orm database any kwargs, try to get the User for such arguments.
     If any exception happens it returns None."""
     try:
@@ -35,13 +29,13 @@ def get_db_user_or_none(db: Database, **kwargs: Any) -> Optional[db.User]:
 
 
 @db_session
-def create_db_user(db: Database, username: str, email: str, salt: str, hashed: str, fullname: str = "") -> db.User:
+def create_db_user(db: schema, username: str, email: str, salt: str, hashed: str, fullname: str = "") -> schema.User:
     """Create a new user with given parameters and store it in db."""
     return db.User(username=username, email=email, salt=salt, hashed=hashed, fullname=fullname)
 
 
 @db_session
-def get_user_by_username_and_password_or_none(db: Database, username: str, password: str) -> Optional[db.User]:
+def get_user_by_username_and_password_or_none(db: schema, username: str, password: str) -> Optional[schema.User]:
     """If correct username/password are provided, fetch the user from db.
     If any exception happens it returns None."""
     try:
@@ -54,7 +48,7 @@ def get_user_by_username_and_password_or_none(db: Database, username: str, passw
 
 
 @db_session
-def get_user_by_access_token_or_none(db: Database, token: str) -> Optional[db.User]:
+def get_user_by_access_token_or_none(db: schema, token: str) -> Optional[schema.User]:
     """If valid token is provided, fetch the user from db.
     If any exception happens it returns None."""
     try:
