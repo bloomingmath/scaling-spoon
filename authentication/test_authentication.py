@@ -1,16 +1,9 @@
-import os
-
-if os.environ.get("SCALING_SPOON_PRODUCTION"):
-    # raise Exception("Do not run tests with production database")
-    del os.environ["SCALING_SPOON_PRODUCTION"]
-
 import ponydb
 import unittest
 import authentication
 import helpers.encryption
-from app_factory import make_app
 
-app, db = make_app()
+db = ponydb.test_db()
 
 with ponydb.db_session:
     db.User.select().delete(bulk=True)
@@ -19,8 +12,9 @@ with ponydb.db_session:
         email='user@example.com',
         salt='2a32b895a0f259276050f38565381b99e22a6d65db06eaf453b7df51eaf41dc5',
         hashed=helpers.encryption.hash_password('2a32b895a0f259276050f38565381b99e22a6d65db06eaf453b7df51eaf41dc5',
-                                                    'pass')
+                                                'pass')
     )
+
 
 class TestAuthentication(unittest.TestCase):
     def test_get_db_user_or_none(self):
@@ -40,7 +34,7 @@ class TestAuthentication(unittest.TestCase):
             email="otheruser@example.com",
             salt="2a32b895a0f259276050f38565381b99e22a6d65db06eaf453b7df51eaf41dc5",
             hashed=helpers.encryption.hash_password('2a32b895a0f259276050f38565381b99e22a6d65db06eaf453b7df51eaf41dc5',
-                                                        'pass'),
+                                                    'pass'),
             fullname="Other User"
         )
         self.assertIsNotNone(authentication.get_db_user_or_none(db, username="otheruser"))
@@ -55,5 +49,6 @@ class TestAuthentication(unittest.TestCase):
         self.assertIsInstance(token, str)
         self.assertIsInstance(authentication.get_user_by_access_token_or_none(db, token), db.User)
 
-if __name__=="__main__":
+
+if __name__ == "__main__":
     unittest.main()

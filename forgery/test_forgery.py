@@ -1,9 +1,5 @@
 from . import async_kwargs_wrap_decorator
-import os
 import pytest
-
-if os.environ.get("SCALING_SPOON_PRODUCTION"):
-    del os.environ["SCALING_SPOON_PRODUCTION"]
 
 
 @pytest.mark.asyncio
@@ -35,7 +31,7 @@ async def test_forgery_with_context():
         "gamma": {"default": 23},
         "delta": {"type": str, "default": fastapi.Form(...)},
         "eta": {"type": int, "optional": True},
-        "epsilon": {"type":str, "optional":True, "default": fastapi.Form(...)}
+        "epsilon": {"type": str, "optional": True, "default": fastapi.Form(...)}
     }
 
     @async_kwargs_wrap_decorator(annotations=fake_annotations, context={'Form': fastapi.Form})

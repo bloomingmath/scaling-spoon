@@ -2,20 +2,16 @@ from starlette.staticfiles import StaticFiles
 from starlette.templating import Jinja2Templates
 from typing import Optional, Tuple
 import fastapi
-import ponydb
+import routers.admin_api
 
-
-def make_app(environment: str = "development") -> (fastapi.applications.FastAPI, ponydb.schema):
+# TODO TODO TODO
+def make_app(environment: str = "development") -> fastapi.applications.FastAPI:
     app = fastapi.FastAPI()
-    if environment == "development":
-        db = ponydb.test_db()
-    elif environment == "production":
-        db = ponydb.std_db()
-    else:
-        raise ValueError("Environment unknown")
 
     app.mount("/static", StaticFiles(directory="static"), name="static")
     app.mount("/templates", StaticFiles(directory="templates"), name="templates")
+
+    app.include_router(routers.admin_api.make_router(db), tags=["admin-api"], prefix="/api/admin")
 
     templates = Jinja2Templates(directory="templates")
 
@@ -137,4 +133,5 @@ def make_app(environment: str = "development") -> (fastapi.applications.FastAPI,
     # async def login_proof(current_user):
     #     return {"current_user": current_user}
 
-    return app, db
+    # return app, db
+    return app

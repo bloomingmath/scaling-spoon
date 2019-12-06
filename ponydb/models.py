@@ -1,24 +1,77 @@
+from __future__ import annotations
 from pony.orm import *
 import helpers.encryption
-import typing
 
 
 def define_entities(db):
-    class User(db.Entity):
+    class Content(db.Entity):
         id = PrimaryKey(int, auto=True)
-        username = Required(str, unique=True)
-        email = Required(str, unique=True)
-        salt = Required(str)
-        hashed = Required(str)
-        fullname = Optional(str)
-        groups = Set('Group')
+        serial = Required(str)
+        short = Required(str)
+        long = Optional(str)
+        node = Required("Node")
+        filetype = Required(str)
 
         @classmethod
-        def create(cls, username: str, email: str, password: str, fullname: str = ""):
-            salt = helpers.encryption.generate_salt()
-            hashed = helpers.encryption.hash_password(salt, password)
-            with db_session:
-                return cls(username=username, email=email, salt=salt, hashed=hashed, fullname=fullname)
+        @db_session
+        def create(cls, short: str, filetype: str, node_serial: str, long: str = "") -> Content:
+            from time import time
+            serial = helpers.encryption.generate_serial(str(time()))
+            node = Node.get(serial=node_serial)
+            return cls(serial=serial, short=short, long=long, node=node, filetype=filetype)
+
+        @classmethod
+        @db_session
+        def read(cls, short: str = None, long: str = None, serial: str = None, node_serial: str = None,
+                 filetype: str = None) -> core.Query:
+            query = cls.select()
+            if short is not None:
+                query = query.filter(lambda content: content.short == short)
+            if long is not None:
+                query = query.filter(lambda content: content.long == long)
+            if serial is not None:
+                query = query.filter(lambda content: content.serial == serial)
+            if node_serial is not None:
+                query = query.filter(lambda content: content.node == Node.get(serial=node_serial))
+            if filetype is not None:
+                query = query.filter(lambda content: content.filetype == filetype)
+            return query
+
+        @db_session
+        def update(self, short: str = None, long: str = None, node_serial: str = None, filetype: str = None) -> Content:
+            for attr in ("short", "long", "node_serial", "filetype"):
+                if locals()[attr] is not None:
+                    setattr(self, attr, locals()[attr])
+            return self
+
+    class Group(db.Entity):
+        id = PrimaryKey(int, auto=True)
+        short = Required(str, unique=True)
+        long = Optional(str)
+        nodes = Set("Node")
+        users = Set("User")
+
+        @classmethod
+        @db_session
+        def create(cls, short: str, long: str = "") -> Group:
+            return cls(short=short, long=long)
+
+        @classmethod
+        @db_session
+        def read(cls, short: str = None, long: str = None) -> core.Query:
+            query = cls.select()
+            if short is not None:
+                query = query.filter(lambda group: group.short == short)
+            if long is not None:
+                query = query.filter(lambda group: group.long == long)
+            return query
+
+        @db_session
+        def update(self, short: str = None, long: str = None) -> Group:
+            for attr in ("short", "long"):
+                if locals()[attr] is not None:
+                    setattr(self, attr, locals()[attr])
+            return self
 
     class Node(db.Entity):
         id = PrimaryKey(int, auto=True)
@@ -38,11 +91,30 @@ def define_entities(db):
             return self.short
 
         @classmethod
-        def create(cls, short: str, long: str = ""):
+        @db_session
+        def create(cls, short: str, long: str = "") -> Node:
             from time import time
             serial = helpers.encryption.generate_serial(str(time()))
-            with db_session:
-                return cls(serial=serial, short=short, long=long)
+            return cls(serial=serial, short=short, long=long)
+
+        @classmethod
+        @db_session
+        def read(cls, short: str = None, long: str = None, serial: str = None) -> core.Query:
+            query = cls.select()
+            if short is not None:
+                query = query.filter(lambda node: node.short == short)
+            if long is not None:
+                query = query.filter(lambda node: node.long == long)
+            if serial is not None:
+                query = query.filter(lambda node: node.serial == serial)
+            return query
+
+        @db_session
+        def update(self, short: str = None, long: str = None) -> Node:
+            for attr in ("short", "long"):
+                if locals()[attr] is not None:
+                    setattr(self, attr, locals()[attr])
+            return self
 
     class MultipleChoiceQuestion(db.Entity):
         id = PrimaryKey(int, auto=True)
@@ -53,39 +125,70 @@ def define_entities(db):
         node = Required(Node)
 
         @classmethod
-        def create(cls, long: str, options_json: str, node_serial: str, short: str = ""):
+        @db_session
+        def create(cls, long: str, options_json: str, node_serial: str, short: str = "") -> MultipleChoiceQuestion:
             from time import time
             from json import loads
             serial = helpers.encryption.generate_serial(str(time()))
             options = loads(options_json)
-            with db_session:
-                node = Node.get(serial=node_serial)
-                return cls(serial=serial, short=short, long=long, options=options, node=node)
-
-    class Group(db.Entity):
-        id = PrimaryKey(int, auto=True)
-        short = Required(str, unique=True)
-        long = Optional(str)
-        nodes = Set(Node)
-        users = Set(User)
+            node = Node.get(serial=node_serial)
+            return cls(serial=serial, short=short, long=long, options=options, node=node)
 
         @classmethod
-        def create(cls, short: str, long: str = ""):
-            with db_session:
-                return cls(short=short, long=long)
+        @db_session
+        def read(cls, short: str = None, long: str = None, serial: str = None, node_serial: str = None) -> core.Query:
+            query = cls.select()
+            if short is not None:
+                query = query.filter(lambda question: question.short == short)
+            if long is not None:
+                query = query.filter(lambda question: question.long == long)
+            if serial is not None:
+                query = query.filter(lambda question: question.serial == serial)
+            if node_serial is not None:
+                query = query.filter(lambda question: question.node == Node.get(serial=node_serial))
+            return query
 
-    class Content(db.Entity):
+        @db_session
+        def update(self, short: str = None, long: str = None, options_json: str = None,
+                   node_serial: str = None) -> MultipleChoiceQuestion:
+            for attr in ("short", "long", "options_json", "node_serial"):
+                if locals()[attr] is not None:
+                    setattr(self, attr, locals()[attr])
+            return self
+
+    class User(db.Entity):
         id = PrimaryKey(int, auto=True)
-        serial = Required(str)
-        short = Required(str)
-        long = Optional(str)
-        node = Required(Node)
-        filetype = Required(str)
+        username = Required(str, unique=True)
+        email = Required(str, unique=True)
+        salt = Required(str)
+        hashed = Required(str)
+        fullname = Optional(str)
+        groups = Set('Group')
 
         @classmethod
-        def create(cls, short: str, filetype: str, node_serial: str, long: str = ""):
-            from time import time
-            serial = helpers.encryption.generate_serial(str(time()))
-            with db_session:
-                node = Node.get(serial=node_serial)
-                return cls(serial=serial, short=short, long=long, node=node, filetype=filetype)
+        @db_session
+        def create(cls, username: str, email: str, password: str, fullname: str = "") -> User:
+            salt = helpers.encryption.generate_salt()
+            hashed = helpers.encryption.hash_password(salt, password)
+            return cls(username=username, email=email, salt=salt, hashed=hashed, fullname=fullname)
+
+        @classmethod
+        @db_session
+        def read(cls, username: str = None, email: str = None, fullname: str = None) -> core.Query:
+            query = cls.select()
+            if username is not None:
+                query = query.filter(lambda user: user.username == username)
+            if email is not None:
+                query = query.filter(lambda user: user.email == email)
+            if fullname is not None:
+                query = query.filter(lambda user: user.fullname == fullname)
+            return query
+
+        @db_session
+        def update(self, password: str = None, fullname: str = None) -> User:
+            if password is not None:
+                hashed = helpers.encryption.hash_password(self.salt, password)
+                self.hashed = hashed
+            if fullname is not None:
+                self.fullname = fullname
+            return self

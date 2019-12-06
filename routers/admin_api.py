@@ -8,15 +8,15 @@ def make_router(db):
     router = APIRouter()
 
     for name, model in db.entities.items():
-        def make_detail_endpoint(db_model):
-            async def api_admin_detail(id: int):
-                with db_session:
-                    return db_model.get(id=id).to_dict()
-
-            api_admin_detail.__name__ = f"api_admin_{name.lower()}_detail"
-            return api_admin_detail
-
-        router.add_api_route(f"/{name.lower()}/{{id}}", make_detail_endpoint(model))
+        # def make_detail_endpoint(db_model):
+        #     async def api_admin_detail(id: int):
+        #         with db_session:
+        #             return db_model.get(id=id).to_dict()
+        #
+        #     api_admin_detail.__name__ = f"api_admin_{name.lower()}_detail"
+        #     return api_admin_detail
+        #
+        # router.add_api_route(f"/{name.lower()}/{{id}}", make_detail_endpoint(model))
 
         def make_read_endpoint(db_model):
             import forge
@@ -45,7 +45,7 @@ def make_router(db):
         router.add_api_route(f"/{name.lower()}", make_read_endpoint(model))
 
         def make_create_endpoint(db_model):
-            import forgery
+            # import forgery
             import forge
             from fastapi import Form
             create_method_signature = forge.fsignature(db_model.create)
@@ -66,20 +66,45 @@ def make_router(db):
             #                                      name=f"api_admin_{name.lower()}_create")
             @forge.sign(*parameter_list)
             async def api_admin_create(**kwargs):
-                try:
-                    with db_session:
-                        db_model.create(**kwargs)
-                        return {"detail": f"{name} object created."}
-                except Exception as err:
-                    print("Should be", db_model, kwargs)
-                    print("Got error", err)
-                    raise HTTPException(
-                        status_code=HTTP_400_BAD_REQUEST,
-                        detail=str(err),
-                    )
+                with db_session:
+                    obj = db_model.create(**kwargs)
+                    return obj.to_dict()
 
             api_admin_create.__name__ = f"api_admin_{name.lower()}_create"
             return api_admin_create
 
         router.add_api_route(f"/{name.lower()}", make_create_endpoint(model), methods=["POST"])
+
+        def make_update_endpoint(db_model):
+            import forge
+            from fastapi import Form
+            update_method_signature = forge.fsignature(db_model.update)
+            parameter_list = [forge.pok(name="id", type=int)] + [
+                forge.kwo(name=par.name, type=par.type, default=Form(None)) for par in
+                update_method_signature if par.name != 'self']
+
+            @forge.sign(*parameter_list)
+            async def api_admin_update(id: int, **kwargs):
+                with db_session:
+                    obj = db_model.get(id=id)
+                    obj.update(**kwargs)
+                    return obj.to_dict()
+
+            api_admin_update.__name__ = f"api_admin_{name.lower()}_update"
+            return api_admin_update
+
+        router.add_api_route(f"/{name.lower()}/{{id}}", make_update_endpoint(model), methods=["PUT"])
+
+        def make_delete_endpoint(db_model):
+            async def api_admin_delete(id: int):
+                with db_session:
+                    db_model.get(id=id).delete()
+                    return {}
+
+            api_admin_delete.__name__ = f"api_admin_{name.lower()}_delete"
+            return api_admin_delete
+
+        router.add_api_route(f"/{name.lower()}/{{id}}", make_delete_endpoint(model), methods=["DELETE"])
+
+
     return router
