@@ -5,6 +5,13 @@ from starlette.requests import Request
 def make_router(database, schemas, operations, application, templates, session):
     router = APIRouter()
 
+    @router.get("/")
+    async def temporary(request: Request):
+        with session:
+            contents_list = list( (content.to_dict()["short"], "/static/contents/{}.{}".format(content.to_dict()["serial"], content.to_dict()["filetype"])) for content in operations.select.content(database, {}))
+        return templates.TemplateResponse("mirabilia.html", {"request": request, "contents_list": contents_list})
+
+
     @router.post("/upload")
     async def upload(short: str = Form(...), filetype: str = Form(...), file: UploadFile = File(...), long: str = Form(None)):
         with session:

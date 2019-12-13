@@ -1,3 +1,4 @@
+{% macro file_upload_form() %}
 <form action="/tmp/upload" method="post" enctype="multipart/form-data">
     <div>
         Short name:
@@ -24,3 +25,26 @@
         <input type="submit" value="Upload File" name="submit" />
     </div>
 </form>
+{% endmacro %}
+
+{% macro collapsible_list(list_name, list) %}
+<details>
+  <summary>{{ list_name }}</summary>
+  <ul>
+      {% for item in list %}
+      <li>{{ item }}</li>
+      {% endfor %}
+  </ul>
+</details>
+{% endmacro %}
+
+{% macro collapsible_link_list(summary, list) %}
+<details>
+  <summary>{{ summary }}</summary>
+  <ul>
+      {% for short, href in list %}
+      <li><a href="{{href}}">{{ short }}</a></li>
+      {% endfor %}
+  </ul>
+</details>
+{% endmacro %}
