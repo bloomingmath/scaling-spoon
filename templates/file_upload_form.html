@@ -1,0 +1,26 @@
+<form action="/tmp/upload" method="post" enctype="multipart/form-data">
+    <div>
+        Short name:
+        <input type="text" name="short" id="short" />
+    </div>
+    <div>
+        Filetype:
+        <select name="filetype">
+            <option value="pdf">pdf</option>
+            <option value="md">md</option>
+            <option value="png">png</option>
+            <option value="mp4">mp4</option>
+        </select>
+    </div>
+    <div>
+        Select file to upload:
+        <input type="file" name="file" id="file" />
+    </div>
+    <div>
+        Description (optional)
+        <textarea name="long" id="long"></textarea>
+    </div>
+    <div>
+        <input type="submit" value="Upload File" name="submit" />
+    </div>
+</form>

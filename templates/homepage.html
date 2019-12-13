@@ -2,90 +2,22 @@
 
 {% block nav %}
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top rounded">
-  <a class="navbar-brand" href="#">Bloomingmath</a>
-  {% if not current_user %}
-  <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
-    <i class="fa fa-sign-in"></i>
-  </button>
-  <div class="collapse navbar-collapse" id="navbarSupportedContent">
-    <ul class="navbar-nav mr-auto">
-    </ul>
-    <form class="form-inline my-2 my-lg-0" action="/login" method="post" enctype="application/x-www-form-urlencoded">
-      <div class="col-xs-12 col-sm-5 col-md-auto px-0 pr-sm-1">
-        <div class="input-group">
-          <div class="input-group-prepend">
-            <div class="input-group-text"><i class="fa fa-user"></i></div>
-          </div>
-          <input type="text" class="form-control" id="exampleInputEmail1" placeholder="Nome utente" name="username"/>
-        </div>
-      </div>
-      <div class="col-xs-12 col-sm-5 col-md-auto px-0 pr-sm-1">
-        <div class="input-group">
-          <div class="input-group-prepend">
-            <div class="input-group-text"><i class="fa fa-lock"></i></div>
-          </div>
-          <input type="password" class="form-control" id="inlineFormInputGroup" placeholder="Password" name="password"/>
-        </div>
-      </div>
-      <div class="col-xs-12 col-sm-2 col-md-auto px-0">
-        <button class="btn btn-primary my-2 my-sm-0 w-100" type="submit">Login</button>
-      </div>
-    </form>
-  </div>
-  {% else %}
-  <div class="navbar-collapse" style="display: flex!important; flex-basis: auto;">
-    <ul class="navbar-nav mr-auto">
-    </ul>
-    <form class="form-inline my-0" action="/logout" method="post" enctype="application/x-www-form-urlencoded">
-      <button class="navbar-toggler" style="display: inline-block;" type="submit"><i class="fa fa-sign-out"></i></button>
-    </form>
-  </div>
-  {% endif %}
+    <a class="navbar-brand" href="#">Bloomingmath</a>
 </nav>
 {% endblock %}
 
 {% block content %}
 <div class="container">
-  <div class="row">
-    {% if current_user %}
-    <div class="col-12">
-      <h1>Benvenut@ {{ current_user.full_name or current_user.username }}</h1>
-      <p>Questa la lista degli argomenti a tua disposizione</p>
+    <div class="row">
+        <div class="col">
+            <h1>Benvenut@ Eternauta</h1>
+            <p>La pagina è in costruzione.</p>
+        </div>
     </div>
-    {% else %}
-    <div class="col-12">
-        <h1>Benvenut@ Eternauta</h1>
-        <form method="post">
-          <h2>Registrati</h2>
-          <p class="hint-text">Completa i campi per la registrazione, oppure accedi al tuo profilo dalla barra di navigazione in alto.</p>
-          <div class="form-group">
-            <div class="row">
-              <div class="col-xs-12 col-sm-6">
-                <input type="text" class="form-control" name="first_name" placeholder="Nome" notrequired/>
-              </div>
-              <div class="col-xs-12 col-sm-6">
-                <input type="text" class="form-control" name="last_name" placeholder="Cognome" notrequired/>
-              </div>
-            </div>
-          </div>
-          <div class="form-group">
-             <input type="text" class="form-control" name="username" placeholder="Nome utente" notrequired/>
-          </div>
-          <div class="form-group">
-             <input type="email" class="form-control" name="email" placeholder="Email" notrequired/>
-          </div>
-          <div class="form-group">
-            <input type="password" class="form-control" name="password1" placeholder="Password" notrequired/>
-          </div>
-          <div class="form-group">
-            <input type="password" class="form-control" name="password2" placeholder="Conferma Password" notrequired/>
-          </div>
-          <div class="form-group">
-            <button type="submit" class="btn btn-success btn-lg btn-block">Crea profilo</button>
-          </div>
-        </form>
+    <div class="row">
+        <div class="col">
+            {% include "file_upload_form.html" %}
+        </div>
     </div>
-    {% endif %}
-  </div>
 </div>
 {% endblock %}
