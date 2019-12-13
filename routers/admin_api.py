@@ -1,6 +1,6 @@
 from fastapi import APIRouter
 from fastapi import HTTPException
-from ponydb import db_session
+from main import db_session
 from starlette.status import HTTP_400_BAD_REQUEST
 
 

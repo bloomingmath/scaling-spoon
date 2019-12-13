@@ -1,10 +1,18 @@
-import fastapi
-import ponydb
-import ponydb.test_ponydb
-import routers.admin_api
+from fastapi import FastAPI
+from importlib import import_module
+from popy import generate_popy, db_session
+from routers import frontend
+from starlette.templating import Jinja2Templates
+from starlette.staticfiles import StaticFiles
 
-db = ponydb.test_db()
-ponydb.test_ponydb.populate_test_db(db)
-app = fastapi.FastAPI()
+database, schemas, operations = generate_popy(import_module("models"), provider="sqlite", filename="database.sqlite", create_db=True)
 
-app.include_router(routers.admin_api.make_router(db), tags=["admin-api"], prefix="/api/admin")
+mainapp = FastAPI()
+
+templates = Jinja2Templates(directory="templates")
+
+mainapp.mount("/static", StaticFiles(directory="static"), name="static")
+
+mainapp.include_router(frontend.make_router(database, schemas, operations, mainapp, templates))
+
+# app.include_router(routers.admin_api.make_router(db), tags=["admin-api"], prefix="/api/admin")

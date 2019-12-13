@@ -1,11 +1,13 @@
-import ponydb
+import popy
+from main import db_session
 import unittest
 import authentication
 import helpers.encryption
 
-db = ponydb.test_db()
+models = __import__("models")
+db = popy.generate_database(models, provider="sqlite", filename=":memory:", create_db=True)
 
-with ponydb.db_session:
+with db_session:
     db.User.select().delete(bulk=True)
     db.User(
         username='user',

@@ -3,8 +3,7 @@ from helpers.encryption import verify_password
 from datetime import datetime
 from datetime import timedelta
 
-from ponydb import schema
-from ponydb import db_session
+from main import Database, db_session
 
 from typing import Any
 from typing import Optional
@@ -17,7 +16,7 @@ ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 30
 
 @db_session
-def get_db_user_or_none(db: schema, **kwargs: Any) -> Optional[schema.User]:
+def get_db_user_or_none(db: Database, **kwargs: Any):
     """Given a pony.orm database any kwargs, try to get the User for such arguments.
     If any exception happens it returns None."""
     try:
@@ -29,13 +28,13 @@ def get_db_user_or_none(db: schema, **kwargs: Any) -> Optional[schema.User]:
 
 
 @db_session
-def create_db_user(db: schema, username: str, email: str, salt: str, hashed: str, fullname: str = "") -> schema.User:
+def create_db_user(db: Database, username: str, email: str, salt: str, hashed: str, fullname: str = ""):
     """Create a new user with given parameters and store it in db."""
     return db.User(username=username, email=email, salt=salt, hashed=hashed, fullname=fullname)
 
 
 @db_session
-def get_user_by_username_and_password_or_none(db: schema, username: str, password: str) -> Optional[schema.User]:
+def get_user_by_username_and_password_or_none(db: Database, username: str, password: str):
     """If correct username/password are provided, fetch the user from db.
     If any exception happens it returns None."""
     try:
@@ -48,7 +47,7 @@ def get_user_by_username_and_password_or_none(db: schema, username: str, passwor
 
 
 @db_session
-def get_user_by_access_token_or_none(db: schema, token: str) -> Optional[schema.User]:
+def get_user_by_access_token_or_none(db: Database, token: str):
     """If valid token is provided, fetch the user from db.
     If any exception happens it returns None."""
     try:

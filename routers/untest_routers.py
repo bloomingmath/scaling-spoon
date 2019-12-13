@@ -2,9 +2,11 @@ ROOT_URL = "http://127.0.0.1:8000"
 
 from starlette.testclient import TestClient
 import fastapi
-import ponydb
+from main import *
+from popy import *
 
-db = ponydb.test_db()
+models = __import__("models")
+db = generate_database(models, provider="sqlite", filename=":memory:", create_db=True)
 app = fastapi.FastAPI()
 client = TestClient(app, base_url="http://127.0.0.1:8000")
 
