@@ -27,39 +27,6 @@
 </form>
 {% endmacro %}
 
-{% macro collapsible_list(list_name, list) %}
-<details>
-  <summary>{{ list_name }}</summary>
-  <ul>
-      {% for item in list %}
-      <li>{{ item }}</li>
-      {% endfor %}
-  </ul>
-</details>
-{% endmacro %}
-
-{% macro collapsible_link_list(summary, list) %}
-<details>
-  <summary>{{ summary }}</summary>
-  <ul>
-      {% for short, href in list %}
-      <li><a href="{{href}}">{{ short }}</a></li>
-      {% endfor %}
-  </ul>
-</details>
-{% endmacro %}
-
-{% macro admin_like_collapsible(summary, data_dict) %}
-<details>
-    <summary>{{ summary }}</summary>
-    <ul>
-        {% for short, item_dict in data_dict.items() %}
-        <li>{{ short }}</li>
-        {% endfor %}
-        <li>Add: {{ group_creation_form() }}</li>
-    </ul>
-</details>
-{% endmacro %}
 
 {% macro group_creation_form() %}
 <form action="/tmp/admin/create/group" method="post" enctype="application/x-www-form-urlencoded">
@@ -72,5 +39,23 @@
     <div>
         <input type="submit" value="Create" name="submit" />
     </div>
+</form>
+{% endmacro %}
+
+{% macro signin_form() %}
+<form class="form-signin">
+<!--  <img class="mb-4" src="/docs/4.4/assets/brand/bootstrap-solid.svg" alt="" width="72" height="72">-->
+  <h1 class="h3 mb-3 font-weight-normal">Accedi all'applicazione</h1>
+  <label for="inputUsername" class="sr-only">Nome utente</label>
+  <input type="text" id="inputUsername" class="form-control" placeholder="Nome utente" required autofocus>
+  <label for="inputPassword" class="sr-only">Password</label>
+  <input type="password" id="inputPassword" class="form-control" placeholder="Password" required>
+<!--  <div class="checkbox mb-3">-->
+<!--    <label>-->
+<!--      <input type="checkbox" value="remember-me"> Remember me-->
+<!--    </label>-->
+<!--  </div>-->
+  <button class="btn btn-lg btn-primary btn-block" type="submit">Accedi</button>
+<!--  <p class="mt-5 mb-3 text-muted">&copy; 2017-2019</p>-->
 </form>
 {% endmacro %}

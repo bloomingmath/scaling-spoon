@@ -1,10 +1,9 @@
 from __future__ import annotations
-from popy.popyorm import *
+from popy import Required, Optional
 import helpers.encryption
 
 
-class Content(Model):
-    # id = PrimaryKey(int, auto=True)
+class Content:
     serial = Required(str)
     short = Required(str)
     long = Optional(str)
@@ -12,7 +11,7 @@ class Content(Model):
     filetype = Required(str)
 
     @classmethod
-    def create_preparation(cls, short: str, filetype: str, long: str = None) -> Content:
+    def create_preparation(cls, short: str, filetype: str, long: str = None):
         from time import time
         serial = helpers.encryption.generate_serial(str(time()))
         create_info = {"short": short, "filetype": filetype, "serial": serial}
@@ -50,35 +49,49 @@ class Content(Model):
         return None
 
 
+class Group:
+    short = Required(str, unique=True)
+    long = Optional(str)
 
-# class Group(Model):
-#     id = PrimaryKey(int, auto=True)
-#     short = Required(str, unique=True)
-#     long = Optional(str)
-#     nodes = Set("Node")
-#     users = Set("User")
-#
-#     @classmethod
-#     @db_session
-#     def create(cls, short: str, long: str = "") -> Group:
-#         return cls(short=short, long=long)
-#
-#     @classmethod
-#     @db_session
-#     def read(cls, short: str = None, long: str = None) -> core.Query:
-#         query = cls.select()
-#         if short is not None:
-#             query = query.filter(lambda group: group.short == short)
-#         if long is not None:
-#             query = query.filter(lambda group: group.long == long)
-#         return query
-#
-#     @db_session
-#     def update(self, short: str = None, long: str = None) -> Group:
-#         for attr in ("short", "long"):
-#             if locals()[attr] is not None:
-#                 setattr(self, attr, locals()[attr])
-#         return self
+    # nodes = Set("Node")
+    # users = Set("User")
+
+    @classmethod
+    def create_preparation(cls, short: str, long: str = None):
+        create_info = {"short": short}
+        if long is not None:
+            create_info["long"] = long
+        return create_info
+
+    @classmethod
+    def get_preparation(cls, id: int = None, short: str = None):
+        get_info = {}
+        if id is not None:
+            get_info["id"] = id
+        if short is not None:
+            get_info["short"] = short
+        return get_info
+
+    @classmethod
+    def select_preparation(cls, short: str = None):
+        select_info = {}
+        if short is not None:
+            select_info["short"] = short
+        return select_info
+
+    @classmethod
+    def update_preparation(cls, short: str = None, long: str = None):
+        update_info = {}
+        if short is not None:
+            update_info["short"] = short
+        if long is not None:
+            update_info["long"] = long
+        return update_info
+
+    @classmethod
+    def show_preparation(cls, short, long):
+        return None
+
 #
 # class Node(Model):
 #     id = PrimaryKey(int, auto=True)

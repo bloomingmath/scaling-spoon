@@ -1,0 +1,64 @@
+from fastapi import APIRouter, File, UploadFile, Form
+from starlette.requests import Request
+import forge
+
+
+def make_router(mc, application, templates):
+    router = APIRouter()
+    db_session = mc.db_session
+
+    @router.get("/")
+    async def home(request: Request):
+        return templates.TemplateResponse("stage01.html", {"request": request})
+
+    # @router.post("/upload")
+    # async def upload(short: str = Form(...), filetype: str = Form(...), file: UploadFile = File(...),
+    #                  long: str = Form(None)):
+    #     with db_session:
+    #         Content = mdict["Content"]
+    #         new_content = Content.operations.create(create_info={"short": short, "filetype": filetype, "long": long})
+    #         serial = new_content.serial
+    #         filetype = new_content.filetype
+    #         open(f"static/contents/{serial}.{filetype}", "wb").write(await file.read())
+    #         return {"new_content": new_content.to_dict()}
+    #
+    # # @router.post("/admin/create/group")
+    # # async def admin_create_group(create_info: mdict["Group"].schemas.create):
+    # #     Group = mdict["Group"]
+    # #     with db_session:
+    # #         x = Group.operations.create(create_info.dict())
+    # #     return {}
+    # admin_endopints = []
+    # for model_name, model in mdict.items():
+    #     for operation_name, operation in model.operations.items():
+    #         async def admin_endpoint(**kwargs):
+    #             print(model.operations[str(operation_name)](**{ key: value.dict() for key, value in kwargs.items() }))
+    #             print("ADIM ENDPOINT", kwargs["create_info"])
+    #             return {}
+    #
+    #         admin_endpoint = forge.copy(operation)(admin_endpoint)
+    #         try:
+    #             admin_endpoint = forge.modify("create_info", type=model.schemas.create)(admin_endpoint)
+    #         except:
+    #             pass
+    #         try:
+    #             admin_endpoint = forge.modify("get_info", type=model.schemas.get)(admin_endpoint)
+    #         except:
+    #             pass
+    #         try:
+    #             admin_endpoint = forge.modify("select_info", type=model.schemas.select)(admin_endpoint)
+    #         except:
+    #             pass
+    #         try:
+    #             admin_endpoint = forge.modify("update_info", type=model.schemas.update)(admin_endpoint)
+    #         except:
+    #             pass
+    #
+    #         # print( forge.fsignature(func))
+    #         admin_endpoint.__name__ = f"admin {operation_name} {model_name.lower()}"
+    #         admin_endopints.append({"path": f"/admin/{operation_name}/{model_name.lower()}", "endpoint": admin_endpoint})
+    #         # print( forge.fsignature(admin_endpoint) )
+    # for dend in admin_endopints:
+    #     router.add_api_route(dend["path"], dend["endpoint"], methods=["POST"])
+
+    return router

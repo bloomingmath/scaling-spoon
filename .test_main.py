@@ -1,14 +1,14 @@
 from importlib import import_module
-from popy import generate_popy, db_session
-from routers import frontend, tmp
+from popy import ModelContainer, db_session
+from routers import frontend, stage01
 from starlette.templating import Jinja2Templates
 from starlette.testclient import TestClient
 from starlette.staticfiles import StaticFiles
 
 import fastapi
 
-database, schemas, operations = generate_popy(import_module("models"), provider="sqlite", filename=":memory:",
-                                              create_db=True)
+mdict = ModelContainer(import_module("models"), provider="sqlite", filename=":memory:",
+                             create_db=True)
 
 testapp = fastapi.FastAPI()
 
@@ -16,8 +16,8 @@ templates = Jinja2Templates(directory="templates")
 
 testapp.mount("/static", StaticFiles(directory="static"), name="static")
 
-testapp.include_router(frontend.make_router(database, schemas, operations, testapp, templates, db_session))
-testapp.include_router(tmp.make_router(database, schemas, operations, testapp, templates, db_session), prefix="/tmp")
+testapp.include_router(frontend.make_router(mdict, testapp, templates, db_session))
+testapp.include_router(stage01.make_router(mdict, testapp, templates, db_session), prefix="/tmp")
 
 client = TestClient(testapp)
 
@@ -42,6 +42,11 @@ def test_tmp_upload():
     import os
     os.remove(f"static/contents/{serial}.{filetype}")
 
+
+def test_admin_endpoint():
+    response = client.post("/tmp/admin/create/group", json={"short": "groupname"})
+    # assert response.status_code == 200
+    pass
 
 if __name__ == "__main__":
     test_homepage()

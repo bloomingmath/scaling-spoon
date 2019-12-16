@@ -21,6 +21,13 @@
     </div>
     <div class="row">
         <div class="col">
+            {% from "macros.html" import admin_like_collapsible %}
+            {{ admin_like_collapsible("Manage your groups", group_admin_dict) }}
+            <hr />
+        </div>
+    </div>
+    <div class="row">
+        <div class="col">
             {% from "macros.html" import collapsible_link_list %}
             {{ collapsible_link_list("Contents (click to expand)", contents_list) }}
             <hr />
