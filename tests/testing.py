@@ -4,6 +4,7 @@ from routers import frontend, stage01
 from starlette.templating import Jinja2Templates
 from starlette.testclient import TestClient
 from starlette.staticfiles import StaticFiles
+from starlette.middleware.sessions import SessionMiddleware
 import fastapi
 
 
@@ -51,6 +52,9 @@ def fake_module(name: str):
                 update_info["fullname"] = fullname
             return update_info
 
+        def authenticate(self, password: str):
+            return helpers.encryption.verify_password(self.salt, self.hashed, password)
+
     User.__module__ = name
     m.User = User
     return m
@@ -67,11 +71,7 @@ templates = Jinja2Templates(directory="templates")
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
 app.include_router(stage01.make_router(mc, app, templates))
+app.add_middleware(SessionMiddleware, secret_key=helpers.encryption.generate_salt())
 
 client = TestClient(app)
-
-def test_homepage():
-    response = client.get("/")
-    assert response.status_code == 200
-    assert "Benvenut@ Eternauta" in response.text
 

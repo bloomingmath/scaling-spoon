@@ -1,17 +1,22 @@
 {% extends "base.html" %}
 
 {% block nav %}
-<nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top rounded">
-    <a class="navbar-brand" href="#">Bloomingmath</a>
-</nav>
+{% from "navbar.html" import navbar %}
+{{ navbar(current_user) }}
 {% endblock %}
 
 {% block content %}
-<div class="container">
-    <div class="row">
-        <div class="col">
-            <h1>Benvenut@ Eternauta</h1>
-            <p>La pagina è in costruzione.</p>
+<div class="jumbotron">
+    <div class="container">
+        <h1 class="display-4">Benvenut@ {% if current_user %}{{ current_user.username }}{% else %}Eternauta{% endif %}</h1>
+        <div class="row">
+            <div class="col col-sm-10 col-md-6">
+                <p>Se non hai ancora un account, procedi alla <a href="/signup">registrazione</a>.</p>
+                <div class="wide-form-container">
+                    {% from "forms.html" import signin_form %}
+                    {{ signin_form() }}
+                </div>
+            </div>
         </div>
     </div>
 </div>

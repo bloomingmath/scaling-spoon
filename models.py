@@ -2,95 +2,95 @@ from __future__ import annotations
 from popy import Required, Optional
 import helpers.encryption
 
-
-class Content:
-    serial = Required(str)
-    short = Required(str)
-    long = Optional(str)
-    # node = Required("Node")
-    filetype = Required(str)
-
-    @classmethod
-    def create_preparation(cls, short: str, filetype: str, long: str = None):
-        from time import time
-        serial = helpers.encryption.generate_serial(str(time()))
-        create_info = {"short": short, "filetype": filetype, "serial": serial}
-        if long is not None:
-            create_info["long"] = long
-        return create_info
-
-    @classmethod
-    def get_preparation(cls, id: int = None, serial: str = None):
-        get_info = {}
-        if id is not None:
-            get_info["id"] = id
-        if serial is not None:
-            get_info["serial"] = serial
-        return get_info
-
-    @classmethod
-    def select_preparation(cls, filetype: str = None):
-        select_info = {}
-        if filetype is not None:
-            select_info["filetype"] = filetype
-        return select_info
-
-    @classmethod
-    def update_preparation(cls, short: str = None, long: str = None):
-        update_info = {}
-        if short is not None:
-            update_info["short"] = short
-        if long is not None:
-            update_info["long"] = long
-        return update_info
-
-    @classmethod
-    def show_preparation(cls, short, serial, long, filetype):
-        return None
-
-
-class Group:
-    short = Required(str, unique=True)
-    long = Optional(str)
-
-    # nodes = Set("Node")
-    # users = Set("User")
-
-    @classmethod
-    def create_preparation(cls, short: str, long: str = None):
-        create_info = {"short": short}
-        if long is not None:
-            create_info["long"] = long
-        return create_info
-
-    @classmethod
-    def get_preparation(cls, id: int = None, short: str = None):
-        get_info = {}
-        if id is not None:
-            get_info["id"] = id
-        if short is not None:
-            get_info["short"] = short
-        return get_info
-
-    @classmethod
-    def select_preparation(cls, short: str = None):
-        select_info = {}
-        if short is not None:
-            select_info["short"] = short
-        return select_info
-
-    @classmethod
-    def update_preparation(cls, short: str = None, long: str = None):
-        update_info = {}
-        if short is not None:
-            update_info["short"] = short
-        if long is not None:
-            update_info["long"] = long
-        return update_info
-
-    @classmethod
-    def show_preparation(cls, short, long):
-        return None
+#
+# class Content:
+#     serial = Required(str)
+#     short = Required(str)
+#     long = Optional(str)
+#     # node = Required("Node")
+#     filetype = Required(str)
+#
+#     @classmethod
+#     def create_preparation(cls, short: str, filetype: str, long: str = None):
+#         from time import time
+#         serial = helpers.encryption.generate_serial(str(time()))
+#         create_info = {"short": short, "filetype": filetype, "serial": serial}
+#         if long is not None:
+#             create_info["long"] = long
+#         return create_info
+#
+#     @classmethod
+#     def get_preparation(cls, id: int = None, serial: str = None):
+#         get_info = {}
+#         if id is not None:
+#             get_info["id"] = id
+#         if serial is not None:
+#             get_info["serial"] = serial
+#         return get_info
+#
+#     @classmethod
+#     def select_preparation(cls, filetype: str = None):
+#         select_info = {}
+#         if filetype is not None:
+#             select_info["filetype"] = filetype
+#         return select_info
+#
+#     @classmethod
+#     def update_preparation(cls, short: str = None, long: str = None):
+#         update_info = {}
+#         if short is not None:
+#             update_info["short"] = short
+#         if long is not None:
+#             update_info["long"] = long
+#         return update_info
+#
+#     @classmethod
+#     def show_preparation(cls, short, serial, long, filetype):
+#         return None
+#
+#
+# class Group:
+#     short = Required(str, unique=True)
+#     long = Optional(str)
+#
+#     # nodes = Set("Node")
+#     # users = Set("User")
+#
+#     @classmethod
+#     def create_preparation(cls, short: str, long: str = None):
+#         create_info = {"short": short}
+#         if long is not None:
+#             create_info["long"] = long
+#         return create_info
+#
+#     @classmethod
+#     def get_preparation(cls, id: int = None, short: str = None):
+#         get_info = {}
+#         if id is not None:
+#             get_info["id"] = id
+#         if short is not None:
+#             get_info["short"] = short
+#         return get_info
+#
+#     @classmethod
+#     def select_preparation(cls, short: str = None):
+#         select_info = {}
+#         if short is not None:
+#             select_info["short"] = short
+#         return select_info
+#
+#     @classmethod
+#     def update_preparation(cls, short: str = None, long: str = None):
+#         update_info = {}
+#         if short is not None:
+#             update_info["short"] = short
+#         if long is not None:
+#             update_info["long"] = long
+#         return update_info
+#
+#     @classmethod
+#     def show_preparation(cls, short, long):
+#         return None
 
 #
 # class Node(Model):

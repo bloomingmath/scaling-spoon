@@ -1,5 +1,6 @@
 from fastapi import APIRouter, File, UploadFile, Form
 from starlette.requests import Request
+from starlette.responses import RedirectResponse
 import forge
 
 
@@ -9,7 +10,43 @@ def make_router(mc, application, templates):
 
     @router.get("/")
     async def home(request: Request):
-        return templates.TemplateResponse("stage01.html", {"request": request})
+        try:
+            username = request.session["authenticated_username"]
+            with db_session:
+                current_user = mc.User.operations.fetch(dict(username=username)).to_dict()
+        except:
+            current_user = None
+        return templates.TemplateResponse("homepage.html", {"request": request, "current_user": current_user})
+
+    @router.get("/signout")
+    async def signout(request: Request):
+        request.session["authenticated_username"] = None
+        return RedirectResponse(url="/", status_code=303)
+
+    @router.post("/signin")
+    async def signin(request: Request, username: str = Form(...), password: str = Form(...)):
+        with db_session:
+            u = mc.User.operations.fetch(dict(username=username))
+            if u is not None and u.authenticate(password):
+                request.session["authenticated_username"] = username
+            else:
+                request.session["authenticated_username"] = None
+                raise Exception("User were not authenticated.")
+        return RedirectResponse(url="/", status_code=303)
+
+    @router.get("/signup")
+    async def signup(request: Request):
+        return templates.TemplateResponse("signup.html", {"request": request})
+
+    @router.post("/signup")
+    async def signup(request: Request, username: str = Form(...), email: str = Form(...), password: str = Form(...),
+                     repassword: str = Form(...)):
+        if password == repassword:
+            with db_session:
+                mc.User.operations.create(dict(username=username, email=email, password=password))
+        else:
+            raise ValueError("Passwords must match")
+        return RedirectResponse(url="/", status_code=303)
 
     # @router.post("/upload")
     # async def upload(short: str = Form(...), filetype: str = Form(...), file: UploadFile = File(...),
