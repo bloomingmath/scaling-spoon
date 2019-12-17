@@ -1,6 +1,6 @@
 from popy import Required, Optional, ModelContainer, db_session
 import helpers.encryption
-from routers import frontend, stage01
+from routers import stage_a
 from starlette.templating import Jinja2Templates
 from starlette.testclient import TestClient
 from starlette.staticfiles import StaticFiles
@@ -70,7 +70,7 @@ templates = Jinja2Templates(directory="templates")
 
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
-app.include_router(stage01.make_router(mc, app, templates))
+app.include_router(stage_a.make_router(mc, app, templates))
 app.add_middleware(SessionMiddleware, secret_key=helpers.encryption.generate_salt())
 
 client = TestClient(app)

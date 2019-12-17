@@ -11,11 +11,15 @@
         <h1 class="display-4">Benvenut@ {% if current_user %}{{ current_user.username }}{% else %}Eternauta{% endif %}</h1>
         <div class="row">
             <div class="col col-sm-10 col-md-6">
+                {% if current_user %}
+                <p>Siamo felici che tu abbia un account, presto la pagina sarà completa e funzionante.</p>
+                {% else %}
                 <p>Se non hai ancora un account, procedi alla <a href="/signup">registrazione</a>.</p>
                 <div class="wide-form-container">
                     {% from "forms.html" import signin_form %}
                     {{ signin_form() }}
                 </div>
+                {% endif %}
             </div>
         </div>
     </div>
