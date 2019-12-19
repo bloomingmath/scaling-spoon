@@ -1,19 +1,25 @@
-from fastapi import FastAPI
-from importlib import import_module
-from popy import generate_models_dict, db_session
-from routers import frontend, stage_a
+from popy import Required, Optional, ModelContainer, db_session
+import helpers.encryption
+from routers import stage_a
 from starlette.templating import Jinja2Templates
+from starlette.testclient import TestClient
 from starlette.staticfiles import StaticFiles
+from starlette.middleware.sessions import SessionMiddleware
+import fastapi
+from importlib import import_module
 
-mdict = generate_models_dict(import_module("models"), provider="sqlite", filename="database.sqlite", create_db=True)
 
-mainapp = FastAPI()
+
+bases = import_module("bases")
+
+mc = ModelContainer(bases, provider="sqlite", filename=":memory:", create_db=True)
+
+app = fastapi.FastAPI()
 
 templates = Jinja2Templates(directory="templates")
 
-mainapp.mount("/static", StaticFiles(directory="static"), name="static")
+app.mount("/static", StaticFiles(directory="static"), name="static")
 
-mainapp.include_router(frontend.make_router(mdict, mainapp, templates, db_session))
-mainapp.include_router(stage_a.make_router(mdict, mainapp, templates, db_session), prefix="/tmp")
+app.include_router(stage_a.make_router(mc, app, templates))
 
-# app.include_router(routers.admin_api.make_router(db), tags=["admin-api"], prefix="/api/admin")
+app.add_middleware(SessionMiddleware, secret_key=helpers.encryption.generate_salt())

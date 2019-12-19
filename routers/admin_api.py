@@ -45,7 +45,7 @@ def make_router(db):
         router.add_api_route(f"/{name.lower()}", make_read_endpoint(model))
 
         def make_create_endpoint(db_model):
-            # import forgery
+            # import .forgery
             import forge
             from fastapi import Form
             create_method_signature = forge.fsignature(db_model.create)
@@ -62,7 +62,7 @@ def make_router(db):
             #     and not getattr(db_model, attr).is_pk
             #     and getattr(db_model, attr).py_type in (int, str)}
 
-            # @forgery.async_kwargs_wrap_decorator(annotations=annotations, context={"Form": Form},
+            # @.forgery.async_kwargs_wrap_decorator(annotations=annotations, context={"Form": Form},
             #                                      name=f"api_admin_{name.lower()}_create")
             @forge.sign(*parameter_list)
             async def api_admin_create(**kwargs):
