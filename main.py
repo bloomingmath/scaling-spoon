@@ -7,6 +7,7 @@ from starlette.staticfiles import StaticFiles
 from starlette.middleware.sessions import SessionMiddleware
 import fastapi
 from importlib import import_module
+from middlewares import RedirectNextMiddleware
 
 
 
@@ -23,3 +24,4 @@ app.mount("/static", StaticFiles(directory="static"), name="static")
 app.include_router(stage_a.make_router(mc, app, templates))
 
 app.add_middleware(SessionMiddleware, secret_key=helpers.encryption.generate_salt())
+app.add_middleware(RedirectNextMiddleware)
