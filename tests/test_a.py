@@ -29,3 +29,7 @@ def test_app_is_online():
     response = client.get("/")
     assert response.status_code == 200
 
+def test_next_query_parameter_redirect():
+    response = client.post("/signup?next=/accident", data={"username": "user", "email":"user@example.com", "password":"pass", "repassword":"pass"})
+    assert response.status_code == 303
+    assert response.headers["location"] == "/accident"

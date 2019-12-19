@@ -1,6 +1,7 @@
 from fastapi import APIRouter, File, UploadFile, Form
 from starlette.requests import Request
 from starlette.responses import RedirectResponse
+from helpers import redirect_url
 import forge
 
 
@@ -21,7 +22,7 @@ def make_router(mc, application, templates):
     @router.get("/signout")
     async def signout(request: Request):
         request.session["authenticated_username"] = None
-        return RedirectResponse(url="/", status_code=303)
+        return RedirectResponse(url=redirect_url(request), status_code=303)
 
     @router.post("/signin")
     async def signin(request: Request, username: str = Form(...), password: str = Form(...)):
@@ -32,7 +33,7 @@ def make_router(mc, application, templates):
             else:
                 request.session["authenticated_username"] = None
                 raise Exception("User were not authenticated.")
-        return RedirectResponse(url="/", status_code=303)
+        return RedirectResponse(url=redirect_url(request), status_code=303)
 
     @router.get("/signup")
     async def signup(request: Request):
@@ -46,7 +47,7 @@ def make_router(mc, application, templates):
                 mc.User.operations.create(dict(username=username, email=email, password=password))
         else:
             raise ValueError("Passwords must match")
-        return RedirectResponse(url="/", status_code=303)
+        return RedirectResponse(url=redirect_url(request), status_code=303)
 
     # @router.post("/upload")
     # async def upload(short: str = Form(...), filetype: str = Form(...), file: UploadFile = File(...),
