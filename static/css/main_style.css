@@ -6,3 +6,16 @@ body {
   padding-top: 50px;
 }
 
+.floating-container {
+  position:absolute;
+  left: 0px;
+  top: 0px;
+  width: 100%;
+  z-index:1050;
+  padding: 40px;
+}
+
+.floating-container .alert {
+    width: 100%
+}
+

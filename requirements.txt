@@ -9,4 +9,6 @@ pony
 pytest
 requests
 selenium
+starlette
 uvicorn
+blinker
