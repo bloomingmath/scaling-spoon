@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Form, Depends  # , File, UploadFile
 from starlette.requests import Request
 from starlette.responses import RedirectResponse
-from helpers import redirect_url, flash, get_message_flashes
+from helpers import flash, get_message_flashes
 
 
 def make_router(mc, application, templates):
@@ -26,7 +26,7 @@ def make_router(mc, application, templates):
             del request.session["authenticated_username"]
         except KeyError:
             pass
-        return RedirectResponse(url=redirect_url(request), status_code=303)
+        return RedirectResponse(url="/", status_code=303)
 
     @router.post("/signin")
     async def signin(request: Request, username: str = Form(...), password: str = Form(...)):
@@ -40,8 +40,8 @@ def make_router(mc, application, templates):
                 except KeyError:
                     pass
                 flash(request, "Utente non riconosciuto.", "warning")
-                return RedirectResponse(url=redirect_url(request), status_code=303)
-        return RedirectResponse(url=redirect_url(request), status_code=303)
+                return RedirectResponse(url="/", status_code=303)
+        return RedirectResponse(url="/", status_code=303)
 
     @router.get("/signup")
     async def signup(request: Request, flashes: list = Depends(get_message_flashes)):
@@ -56,13 +56,13 @@ def make_router(mc, application, templates):
                 with db_session:
                     mc.User.operations.create(dict(username=username, email=email, password=password))
                 flash(request, "Utente creato con successo.", "success")
-                return RedirectResponse(url=redirect_url(request), status_code=303)
+                return RedirectResponse(url="/", status_code=303)
             except TransactionIntegrityError:
                 flash(request, "Non è stato possibile creare l'utente. Forse un duplicato?", "warning")
-                return RedirectResponse(url=redirect_url(request, "/signup"), status_code=303)
+                return RedirectResponse(url="/signup", status_code=303)
         else:
             flash(request, "Le password devono coincidere.", "warning")
-            return RedirectResponse(url=redirect_url(request, "/signup"), status_code=303)
+            return RedirectResponse(url="/signup", status_code=303)
 
     # @router.post("/upload")
     # async def upload(short: str = Form(...), filetype: str = Form(...), file: UploadFile = File(...),

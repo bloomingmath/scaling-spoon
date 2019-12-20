@@ -1,12 +1,14 @@
 aiofiles
+async_asgi_testclient
+blinker
 fastapi
 itsdangerous
 jinja2
+pony
+pytest
 pytest-asyncio
 python-forge
 python-multipart
-pony
-pytest
 requests
 selenium
 starlette

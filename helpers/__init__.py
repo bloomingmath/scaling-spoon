@@ -3,22 +3,6 @@ from blinker import signal
 from starlette.requests import Request
 
 
-def redirect_url(request, default="/"):
-    """Gives a default url unless a 'next' query parameter comes with the request."""
-    try:
-        url = request.query_params["next"]
-        assert isinstance(url, str)
-        assert len(url) > 0
-        assert url[0] == "/"
-    except (AttributeError, KeyError, AssertionError):
-        url = None
-    if url:
-        return url
-    else:
-
-        return default
-
-
 def flash(request, message, category):
     """Signals that a flash message has been dispatched. Somewhere else, the receiver with catch the signal."""
     signal("message-flash").send(request.app, message=message, category=category)
