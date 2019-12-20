@@ -1,50 +1,68 @@
-from popy import Required, Optional, ModelContainer, db_session
-import helpers.encryption
-from routers import stage_a
-from starlette.templating import Jinja2Templates
-from starlette.testclient import TestClient
-from starlette.staticfiles import StaticFiles
-from starlette.middleware.sessions import SessionMiddleware
-from starlette.middleware.base import BaseHTTPMiddleware
-import fastapi
-from helpers.middlewarehacks import BaseHTTPMiddleware
-from importlib import import_module
-
-
-
-bases = import_module("bases")
-
-mc = ModelContainer(bases, provider="sqlite", filename=":memory:", create_db=True)
-
-app = fastapi.FastAPI()
-
-templates = Jinja2Templates(directory="templates")
-
-app.mount("/static", StaticFiles(directory="static"), name="static")
-
-app.include_router(stage_a.make_router(mc, app, templates))
-app.add_middleware(SessionMiddleware, secret_key=helpers.encryption.generate_salt())
-
-import time
-from starlette.requests import Request
-
-@app.middleware("http")
-async def add_process_time_header(request: Request, call_next):
-    next_url = request.query_params.get("next", None)
-    response = await call_next(request)
-    if next_url:
-        # response.headers['X-Custom'] = next_url
-        print("Next_url", next_url)
-    return response
-
-# app.add_middleware(BaseHTTPMiddleware, dispatch=add_process_time_header)
+import pytest
+from async_asgi_testclient import TestClient
+from main import app
 
 client = TestClient(app)
 
-def test_nextmiddleware():
-    client.get("/?next=/signup")
 
-def test_app_is_online():
-    response = client.get("/")
+@pytest.mark.asyncio
+async def test_app_is_online():
+    """First of all, check if the app can run."""
+    response = await client.get("/")
     assert response.status_code == 200
 
+
+@pytest.mark.asyncio
+async def test_wrong_login():
+    """When posting wrong signin information, you are redirected to the mainpage and a warning message is flashed."""
+    response = await client.post("/signin", form={"username": "wrong name", "password": "pass"})
+    # assert response.status_code == 303
+    # response = await client.send(response.next)
+    assert response.status_code == 200
+    assert "Benvenut@ Eternauta" in response.text
+    assert "Utente non riconosciuto." in response.text
+
+
+@pytest.mark.asyncio
+async def test_signup_password_mismatch():
+    """When posting signup form with passwords that don't match, you are stuck to the same page, but a warning signal
+    is flashed """
+    response = await client.post("/signup", form={
+        "username": "user",
+        "email": "user@example.com",
+        "password": "pass",
+        "repassword": "different pass",
+    })
+    assert response.status_code == 200
+    assert "Registrati compilando questo modulo." in response.text
+    assert "Le password devono coincidere." in response.text
+
+
+@pytest.mark.asyncio
+async def test_next_query_parameter_redirect():
+    """When posting with a 'next' query parameter, you are redirected to that url if a redirection occurs."""
+    response = await client.post("/signup?next=/accident", form={
+        "username": "user",
+        "email": "user@example.com",
+        "password": "pass",
+        "repassword": "pass",
+    })
+    assert response.status_code == 404
+    response = await client.post("/signup?next=/", form={
+        "username": "user2",
+        "email": "user2@example.com",
+        "password": "pass",
+        "repassword": "pass",
+    })
+    assert response.status_code == 200
+
+
+@pytest.mark.asyncio
+async def test_flash_messaging():
+    """When server flashes a message, it appears in the next response, just one time."""
+    response = await client.post("/signup", form={"username": "user", "email": "user@example.com", "password": "pass",
+                                            "repassword": "nopass"})
+    assert response.status_code == 200
+    assert "Guacamole!" in response.text
+    response = await client.get("/")
+    assert "Guacamole!" not in response.text
