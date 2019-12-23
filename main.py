@@ -1,6 +1,7 @@
+from importlib import import_module
+
 from blinker import signal
 from fastapi import FastAPI
-from importlib import import_module
 from starlette.middleware.sessions import SessionMiddleware
 from starlette.requests import Request
 from starlette.staticfiles import StaticFiles
@@ -9,12 +10,15 @@ from starlette.templating import Jinja2Templates
 from helpers import generate_salt
 from helpers import load_flashes
 from popy import ModelContainer
+from popy import db_session
 from routers import stage_a
 from tests.populate import populate
 
 # Import bases (pony-like classes) and generate database, database's models, schemas and operations
 bases = import_module("bases")
 mc = ModelContainer(bases, provider="sqlite", filename=":memory:", create_db=True)
+
+# Set up some instances for testing purpose
 populate(mc)
 
 # Create fastapi application with templates, static files, endpoints from routers and session middleware

@@ -1,6 +1,10 @@
-from .encryption import generate_salt, generate_serial, hash_password, verify_password
 from blinker import signal
 from starlette.requests import Request
+
+from .encryption import generate_salt
+from .encryption import generate_serial
+from .encryption import hash_password
+from .encryption import verify_password
 
 
 def flash(request, message, category):

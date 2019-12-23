@@ -1,10 +1,12 @@
 aiofiles
 async_asgi_testclient
 blinker
+blinker
 fastapi
 itsdangerous
 jinja2
 pony
+pydantic
 pytest
 pytest-asyncio
 python-forge
@@ -13,4 +15,3 @@ requests
 selenium
 starlette
 uvicorn
-blinker

@@ -14,7 +14,7 @@
         <h1 class="display-4">Profilo di {{ current_user.username }}</h1>
         <div class="row">
             <div class="col">
-                Cambia il tuo nome:
+                Cambia il tuo nome ({{ current_user.fullname }}):
                 {{ change_fullname_form(current_user.fullname, next="/profile") }}
             </div>
         </div>
@@ -23,10 +23,10 @@
                 <p>Questi sono i gruppi di cui fai parte:</p>
                 <ul>
                     {% for group in user_groups %}
-                    <li>{{ group.short }} - {{ group_unsubscription_form(group.id, next="/profile") }}</li>
+                    <li>{{ group.short }} - {{ group_unsubscription_form(group.id, group.short, next="/profile") }}</li>
                     {% endfor %}
                 </ul>
-                <details>
+                <details id="other_group_details">
                     <summary>Per iscriverti ad un altro gruppo, scegli da questa lista:</summary>
                     <ul>
                         {% for group in other_groups %}

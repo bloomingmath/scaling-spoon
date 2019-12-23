@@ -2,6 +2,7 @@ import helpers.encryption
 from popy import Required, Optional, Set
 from pydantic import BaseConfig
 
+
 class Group:
     short = Required(str, unique=True)
     long = Optional(str)
@@ -10,6 +11,7 @@ class Group:
 
     class Config(BaseConfig):
         arbitrary_types_allowed = True
+
 
 class User:
     username = Required(str, unique=True)

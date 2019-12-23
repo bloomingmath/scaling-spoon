@@ -2,11 +2,25 @@ from fastapi import APIRouter, Form, Depends  # , File, UploadFile
 from starlette.requests import Request
 from starlette.responses import RedirectResponse
 from helpers import flash, get_message_flashes
+from popy import db_session
+
+# class CurrentUserDependence:
+#     def __init__(self, mc):
+#         self.mc = mc
+
 
 
 def make_router(mc, application, templates):
     router = APIRouter()
     db_session = mc.db_session
+
+    def get_authenticated_username(request: Request):
+        """Dependency for current authenticated user in session."""
+        return request.session.get("authenticated_username", None)
+
+    def get_current_user(request: Request):
+        username = request.session.get("authenticated_username", None)
+        return mc.User.operations.fetch({"username": username})
 
     @router.get("/")
     async def home(request: Request, flashes: list = Depends(get_message_flashes)):
@@ -66,21 +80,16 @@ def make_router(mc, application, templates):
 
     @router.get("/profile")
     async def profile(request: Request, flashes: list = Depends(get_message_flashes)):
-        try:
-            username = request.session["authenticated_username"]
-            with db_session:
-                current_user = mc.User.operations.fetch(dict(username=username)).to_dict()
-        except KeyError:
-            current_user = None
         user_groups = all_groups = []
-        if current_user:
-            with db_session:
+        with db_session:
+            current_user = get_current_user(request)
+            if current_user:
                 public_groups = list(mc.Group.operations.select({"public": True}))
-                active_groups = list(mc.User.operations.fetch(dict(username=username)).groups)
+                active_groups = list(current_user.groups)
                 user_groups = [group.to_dict() for group in active_groups]
                 other_groups = [group.to_dict() for group in public_groups if group not in active_groups]
-        context = {}
-        context.update({"request": request, "current_user": current_user, "flashes": flashes, "user_groups": user_groups, "other_groups": other_groups})
+            context = {}
+            context.update({"request": request, "current_user": current_user.to_dict(), "flashes": flashes, "user_groups": user_groups, "other_groups": other_groups})
         return templates.TemplateResponse("profile.html", context)
 
 
@@ -88,28 +97,25 @@ def make_router(mc, application, templates):
     @router.post("/subscribe")
     async def subscribe(request: Request, group_id: int = Form(...)):
         with db_session:
+            current_user = get_current_user(request)
             group = mc.Group.operations.fetch({"id":group_id})
-            username = request.session["authenticated_username"]
-            user = mc.User.operations.fetch(dict(username=username))
-            user.groups.add(group)
+            current_user.groups.add(group)
         return RedirectResponse(url="/", status_code=303)
 
     @router.post("/unsubscribe")
     async def unsubscribe(request: Request, group_id: int = Form(...)):
         with db_session:
             group = mc.Group.operations.fetch({"id":group_id})
-            username = request.session["authenticated_username"]
-            user = mc.User.operations.fetch(dict(username=username))
-            user.groups.remove(group)
+            current_user = get_current_user(request)
+            current_user.groups.remove(group)
         return RedirectResponse(url="/", status_code=303)
 
     @router.post("/change_fullname")
     async def change_fullname(request: Request, fullname: str = Form(None)):
         with db_session:
-            username = request.session["authenticated_username"]
-            user = mc.User.operations.fetch(dict(username=username))
+            current_user = get_current_user(request)
             if fullname is not None:
-                user.fullname = fullname
+                current_user.fullname = fullname
         return RedirectResponse(url="/", status_code=303)
 
     # @router.post("/upload")
