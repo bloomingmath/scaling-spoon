@@ -81,3 +81,24 @@
 <!--  <p class="mt-5 mb-3 text-muted">&copy; 2017-2019</p>-->
 </form>
 {% endmacro %}
+
+{% macro group_subscription_form(id, short, next="/") %}
+<form class="single-click-form" action="/subscribe?next={{next}}" method="post" enctype="application/x-www-form-urlencoded">
+    <input type="hidden" id="group_{{short}}" name="group_id" value="{{id}}"/>
+    <button class="btn btn-lg btn-primary btn-block" type="submit">{{ short }}</button>
+</form>
+{% endmacro %}
+
+{% macro group_unsubscription_form(id, next="/") %}
+<form class="single-click-form" action="/unsubscribe?next={{next}}" method="post" enctype="application/x-www-form-urlencoded">
+    <input type="hidden" id="unsub_group_{{short}}" name="group_id" value="{{id}}"/>
+    <button class="btn btn-lg btn-primary btn-block" type="submit">esci da {{ short }}</button>
+</form>
+{% endmacro %}
+
+{% macro change_fullname_form(fullname="", next="/") %}
+<form action="/change_fullname?next={{next}}" method="post" enctype="application/x-www-form-urlencoded">
+    <input type="text" name="fullname" value="{{fullname}}" placeholder="Nome completo"/>
+    <button type="submit">Cambia nome</button>
+</form>
+{% endmacro %}

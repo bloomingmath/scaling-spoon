@@ -5,6 +5,7 @@ from pydantic import BaseConfig
 class Group:
     short = Required(str, unique=True)
     long = Optional(str)
+    public = Required(bool, default=True)
     members = Set("User", reverse="groups")
 
     class Config(BaseConfig):

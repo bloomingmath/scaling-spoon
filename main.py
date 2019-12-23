@@ -10,10 +10,12 @@ from helpers import generate_salt
 from helpers import load_flashes
 from popy import ModelContainer
 from routers import stage_a
+from tests.populate import populate
 
 # Import bases (pony-like classes) and generate database, database's models, schemas and operations
 bases = import_module("bases")
 mc = ModelContainer(bases, provider="sqlite", filename=":memory:", create_db=True)
+populate(mc)
 
 # Create fastapi application with templates, static files, endpoints from routers and session middleware
 app = FastAPI()
