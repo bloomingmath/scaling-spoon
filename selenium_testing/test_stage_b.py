@@ -33,6 +33,14 @@ def test_profile_page():
         driver.find_element_by_id("sub_group_prima_button").click()
         assert "unsub_group_prima" in driver.page_source
 
+        driver.find_element_by_link_text("Bloomingmath").click()
+        assert driver.current_url == f"{base_url}/"
+        assert "Questi sono gli argomenti a tua disposizione" in driver.page_source
+        assert "second" in driver.page_source
+
+        driver.find_element_by_link_text("profilo").click()
+        driver.find_element_by_id("other_group_details").click()
+
         driver.find_element_by_id("unsub_group_prima_button").click()
         assert "sub_group_prima" in driver.page_source
 

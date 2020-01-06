@@ -24,14 +24,18 @@ def make_router(mc, application, templates):
 
     @router.get("/")
     async def home(request: Request, flashes: list = Depends(get_message_flashes)):
-        try:
-            username = request.session["authenticated_username"]
-            with db_session:
-                current_user = mc.User.operations.fetch(dict(username=username)).to_dict()
-        except KeyError:
-            current_user = None
-        context = {}
-        context.update({"request": request, "current_user": current_user, "flashes": flashes})
+        context = {"request": request, "flashes": flashes}
+        with db_session:
+            try:
+                username = request.session["authenticated_username"]
+                current_user = mc.User.operations.fetch(dict(username=username))
+                context["current_user"] = current_user.to_dict()
+                if current_user is not None:
+                    user_s_nodes = [ node.to_dict() for node in set([ node for group in current_user.groups for node in group.nodes ]) ]
+                    context["user_s_nodes"] = user_s_nodes
+                    context["user_has_nodes"] = len(user_s_nodes) > 0
+            except KeyError:
+                context["current_user"] = None
         return templates.TemplateResponse("homepage.html", context)
 
     @router.get("/signout")

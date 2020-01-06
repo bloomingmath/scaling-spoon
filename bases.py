@@ -8,6 +8,15 @@ class Group:
     long = Optional(str)
     public = Required(bool, default=True)
     members = Set("User", reverse="groups")
+    nodes = Set("Node", reverse="groups")
+
+    class Config(BaseConfig):
+        arbitrary_types_allowed = True
+
+class Node:
+    short = Required(str, unique=True)
+    long = Optional(str)
+    groups = Set("Group", reverse="nodes")
 
     class Config(BaseConfig):
         arbitrary_types_allowed = True
