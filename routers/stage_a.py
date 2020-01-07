@@ -2,11 +2,8 @@ from fastapi import APIRouter, Form, Depends  # , File, UploadFile
 from starlette.requests import Request
 from starlette.responses import RedirectResponse
 from helpers import flash, get_message_flashes
-from popy import db_session
-
-# class CurrentUserDependence:
-#     def __init__(self, mc):
-#         self.mc = mc
+from models import User
+from db.mongodb import get_database, AsyncIOMotorDatabase
 
 
 
@@ -23,78 +20,20 @@ def make_router(mc, application, templates):
         return mc.User.operations.fetch({"username": username})
 
     @router.get("/")
-    async def home(request: Request, flashes: list = Depends(get_message_flashes)):
+    async def home(request: Request, flashes: list = Depends(get_message_flashes), db: AsyncIOMotorDatabase = Depends(get_database)):
         context = {"request": request, "flashes": flashes}
         with db_session:
             try:
-                username = request.session["authenticated_username"]
-                current_user = mc.User.operations.fetch(dict(username=username))
-                context["current_user"] = current_user.to_dict()
-                if current_user is not None:
-                    user_s_nodes = [ node.to_dict() for node in set([ node for group in current_user.groups for node in group.nodes ]) ]
-                    context["user_s_nodes"] = user_s_nodes
-                    context["user_has_nodes"] = len(user_s_nodes) > 0
+                email = request.session["authenticated_email"]
+                current_user = await User.read(db=db, email=email)
+                context["current_user"] = current_user
+                # if current_user is not None:
+                #     user_s_nodes = [ node.to_dict() for node in set([ node for group in current_user.groups for node in group.nodes ]) ]
+                #     context["user_s_nodes"] = user_s_nodes
+                #     context["user_has_nodes"] = len(user_s_nodes) > 0
             except KeyError:
                 context["current_user"] = None
         return templates.TemplateResponse("homepage.html", context)
-
-    @router.get("/signout")
-    async def signout(request: Request):
-        try:
-            del request.session["authenticated_username"]
-        except KeyError:
-            pass
-        return RedirectResponse(url="/", status_code=303)
-
-    @router.post("/signin")
-    async def signin(request: Request, username: str = Form(...), password: str = Form(...)):
-        with db_session:
-            u = mc.User.operations.fetch(dict(username=username))
-            if u is not None and u.authenticate(password):
-                request.session["authenticated_username"] = username
-            else:
-                try:
-                    del request.session["authenticated_username"]
-                except KeyError:
-                    pass
-                flash(request, "Utente non riconosciuto.", "warning")
-                return RedirectResponse(url="/", status_code=303)
-        return RedirectResponse(url="/", status_code=303)
-
-    @router.get("/signup")
-    async def signup(request: Request, flashes: list = Depends(get_message_flashes)):
-        return templates.TemplateResponse("signup.html", {"request": request, "flashes": flashes})
-
-    @router.post("/signup")
-    async def signup(request: Request, username: str = Form(...), email: str = Form(...), password: str = Form(...),
-                     repassword: str = Form(...)):
-        if password == repassword:
-            from popy import TransactionIntegrityError
-            try:
-                with db_session:
-                    mc.User.operations.create(dict(username=username, email=email, password=password))
-                flash(request, "Utente creato con successo.", "success")
-                return RedirectResponse(url="/", status_code=303)
-            except TransactionIntegrityError:
-                flash(request, "Non è stato possibile creare l'utente. Forse un duplicato?", "warning")
-                return RedirectResponse(url="/signup", status_code=303)
-        else:
-            flash(request, "Le password devono coincidere.", "warning")
-            return RedirectResponse(url="/signup", status_code=303)
-
-    @router.get("/profile")
-    async def profile(request: Request, flashes: list = Depends(get_message_flashes)):
-        user_groups = all_groups = []
-        with db_session:
-            current_user = get_current_user(request)
-            if current_user:
-                public_groups = list(mc.Group.operations.select({"public": True}))
-                active_groups = list(current_user.groups)
-                user_groups = [group.to_dict() for group in active_groups]
-                other_groups = [group.to_dict() for group in public_groups if group not in active_groups]
-            context = {}
-            context.update({"request": request, "current_user": current_user.to_dict(), "flashes": flashes, "user_groups": user_groups, "other_groups": other_groups})
-        return templates.TemplateResponse("profile.html", context)
 
 
 
@@ -112,14 +51,6 @@ def make_router(mc, application, templates):
             group = mc.Group.operations.fetch({"id":group_id})
             current_user = get_current_user(request)
             current_user.groups.remove(group)
-        return RedirectResponse(url="/", status_code=303)
-
-    @router.post("/change_fullname")
-    async def change_fullname(request: Request, fullname: str = Form(None)):
-        with db_session:
-            current_user = get_current_user(request)
-            if fullname is not None:
-                current_user.fullname = fullname
         return RedirectResponse(url="/", status_code=303)
 
     # @router.post("/upload")

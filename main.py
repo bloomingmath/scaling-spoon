@@ -13,6 +13,7 @@ from popy import ModelContainer
 from popy import db_session
 from routers import stage_a
 from tests.populate import populate
+from db.mongodb_utils import close_mongo_connection, connect_to_mongo
 
 # Import bases (pony-like classes) and generate database, database's models, schemas and operations
 bases = import_module("bases")
@@ -25,11 +26,20 @@ populate(mc)
 app = FastAPI()
 templates = Jinja2Templates(directory="templates")
 app.mount("/static", StaticFiles(directory="static"), name="static")
-app.include_router(stage_a.make_router(mc, app, templates))
+
+
+app.add_event_handler("startup", connect_to_mongo)
+app.add_event_handler("shutdown", close_mongo_connection)
+
 
 # Adding middlewares
 app.add_middleware(SessionMiddleware, secret_key=generate_salt())
 
+
+app.include_router(stage_a.make_router(mc, app, templates))
+
+from routers import users
+app.include_router(users.router, prefix="/users")
 
 @app.middleware("http")
 async def next_url_redirect(request: Request, call_next):
@@ -55,3 +65,7 @@ app.signals = {
 }
 app.context_store = {}
 signal("message-flash").connect(load_flashes)
+
+if __name__ == "__main__":
+    from uvicorn import run
+    run(app)

@@ -15,7 +15,7 @@
             <div class="col col-sm-10 col-md-6">
                 {% if current_user %}
                 <p>Siamo felici che tu abbia un account, presto la pagina sarà completa e funzionante.</p>
-                <p>Nel frattempo, controlla il tuo <a href="/profile">profilo</a>.</p>
+                <p>Nel frattempo, controlla il tuo <a href="/users/profile">profilo</a>.</p>
 
                 {% if user_has_nodes %}
                 <p>Questi sono gli argomenti a tua disposizione:</p>
@@ -32,10 +32,10 @@
                 {% endif %}
 
                 {% else %}
-                <p>Se non hai ancora un account, procedi alla <a href="/signup">registrazione</a>.</p>
+                <p>Se non hai ancora un account, procedi alla <a href="/users/signup">registrazione</a>.</p>
                 <div class="wide-form-container">
-                    {% from "forms.html" import signin_form %}
-                    {{ signin_form() }}
+                    {% from "forms.html" import login_form %}
+                    {{ login_form() }}
                 </div>
                 {% endif %}
             </div>
