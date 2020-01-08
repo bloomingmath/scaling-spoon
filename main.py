@@ -1,23 +1,19 @@
-from blinker import signal
 from fastapi import FastAPI
 from starlette.middleware.sessions import SessionMiddleware
 from starlette.requests import Request
 from starlette.staticfiles import StaticFiles
 
-from extensions import mongo, render_engine
+from extensions import mongo_engine, render_engine, signals_engine
 from helpers import generate_salt
-from helpers import load_flashes
 from routers import users, main, groups
 
 # Create fastapi application with templates, static files, endpoints from routers and session middleware
 app = FastAPI()
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
-mongo.init_app(app)
+mongo_engine.init_app(app)
 render_engine.init_app(app)
-# app.add_event_handler("startup", connect_to_mongo)
-# app.add_event_handler("shutdown", close_mongo_connection)
-
+signals_engine.init_app(app)
 
 # Adding middlewares
 app.add_middleware(SessionMiddleware, secret_key=generate_salt())
@@ -46,12 +42,6 @@ async def next_url_redirect(request: Request, call_next):
     return response
 
 
-# Set up blinker signaling system
-app.signals = {
-    "message-flash": signal("message-flash"),
-}
-app.context_store = {}
-signal("message-flash").connect(load_flashes)
 
 if __name__ == "__main__":
     from uvicorn import run

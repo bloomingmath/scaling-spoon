@@ -1,14 +1,14 @@
+from typing import Callable
+
 from fastapi import APIRouter, Form, Depends, HTTPException
 from starlette.requests import Request
 from starlette.responses import RedirectResponse
-from typing import Callable
-router = APIRouter()
 
-from extensions import AsyncIOMotorDatabase, get_database, get_render
-from helpers import flash, get_message_flashes
+from extensions import AsyncIOMotorDatabase, get_database, get_render, flash, get_message_flashes
 from models import User, Group, ForceUnset
 from schemas import SignupForm, LoginForm, UpdateUserModel
 
+router = APIRouter()
 
 
 async def get_current_user(request: Request, db: AsyncIOMotorDatabase = Depends(get_database)):
@@ -52,7 +52,8 @@ async def logout(request: Request):
 
 @router.get("/profile")
 async def profile(request: Request, flashes: list = Depends(get_message_flashes),
-                  db: AsyncIOMotorDatabase = Depends(get_database), current_user: User = Depends(get_current_user), render: Callable = Depends(get_render)):
+                  db: AsyncIOMotorDatabase = Depends(get_database), current_user: User = Depends(get_current_user),
+                  render: Callable = Depends(get_render)):
     context = {"flashes": flashes, "request": request, "current_user": current_user}
     all_groups = await Group.browse(db)
     # active_groups = list(current_user.groups)
@@ -63,13 +64,17 @@ async def profile(request: Request, flashes: list = Depends(get_message_flashes)
 
 
 @router.get("/signup")
-async def signup_get(request: Request, flashes: list = Depends(get_message_flashes), render: Callable = Depends(get_render)):
+async def signup_get(request: Request, flashes: list = Depends(get_message_flashes),
+                     render: Callable = Depends(get_render)):
     return render("signup.html", {"request": request, "flashes": flashes})
 
 
 @router.post("/signup")
 async def signup_post(request: Request, signup_form: SignupForm = Depends(SignupForm),
                       db: AsyncIOMotorDatabase = Depends(get_database)):
-    await User.create(db, signup_form)
-    flash(request, "Utente creato con successo.", "success")
+    try:
+        await User.create(db, signup_form)
+        flash(request, "Utente creato con successo.", "success")
+    except ValueError:
+        flash(request, "Non è stato possibile creare l'utente. Forse un duplicato?", "warning")
     return RedirectResponse(url="/", status_code=303)

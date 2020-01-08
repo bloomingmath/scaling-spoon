@@ -1,24 +1,24 @@
 from fastapi import APIRouter, Form, Depends  # , File, UploadFile
 from starlette.requests import Request
 from starlette.responses import RedirectResponse
-from helpers import flash, get_message_flashes
+from extensions import flash, get_message_flashes
 from models import User
 from db import get_database, AsyncIOMotorDatabase
 
-
-
 router = APIRouter()
+
 
 @router.post("/subscribe")
 async def subscribe(request: Request, group_id: int = Form(...)):
     current_user = get_current_user(request)
-    group = mc.Group.operations.fetch({"id":group_id})
+    group = mc.Group.operations.fetch({"id": group_id})
     current_user.groups.add(group)
     return RedirectResponse(url="/", status_code=303)
 
+
 @router.post("/unsubscribe")
 async def unsubscribe(request: Request, group_id: int = Form(...)):
-    group = mc.Group.operations.fetch({"id":group_id})
+    group = mc.Group.operations.fetch({"id": group_id})
     current_user = get_current_user(request)
     current_user.groups.remove(group)
     return RedirectResponse(url="/", status_code=303)
@@ -72,4 +72,3 @@ async def unsubscribe(request: Request, group_id: int = Form(...)):
     #         # print( forge.fsignature(admin_endpoint) )
     # for dend in admin_endopints:
     #     router.add_api_route(dend["path"], dend["endpoint"], methods=["POST"])
-
