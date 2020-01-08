@@ -30,7 +30,7 @@
                     <summary>Per iscriverti ad un altro gruppo, scegli da questa lista:</summary>
                     <ul>
                         {% for group in other_groups %}
-                        <li>{{ group_subscription_form(group.id, group.short, next="/profile") }}</li>
+                        <li>{{ group_subscription_form(group.id, group.short, next="/users/profile") }}</li>
                         {% endfor %}
                     </ul>
                 </details>

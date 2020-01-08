@@ -56,10 +56,9 @@ async def profile(request: Request, flashes: list = Depends(get_message_flashes)
                   render: Callable = Depends(get_render)):
     context = {"flashes": flashes, "request": request, "current_user": current_user}
     all_groups = await Group.browse(db)
-    # active_groups = list(current_user.groups)
-    # user_groups = [group.to_dict() for group in active_groups]
-    # other_groups = [group.to_dict() for group in public_groups if group not in active_groups]
-    context.update({"all_groups": all_groups})
+    user_groups = list(current_user.groups)
+    other_groups = [group for group in all_groups if group not in current_user.groups]
+    context.update({"user_groups": user_groups, "other_groups":other_groups})
     return render("profile.html", context)
 
 

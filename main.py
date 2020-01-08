@@ -7,23 +7,16 @@ from extensions import mongo_engine, render_engine, signals_engine
 from helpers import generate_salt
 from routers import users, main, groups
 
-# Create fastapi application with templates, static files, endpoints from routers and session middleware
+# Create fastapi application with rendering engine, motor mongodb connection, static files and signaling system
 app = FastAPI()
-app.mount("/static", StaticFiles(directory="static"), name="static")
 
+app.mount("/static", StaticFiles(directory="static"), name="static")
 mongo_engine.init_app(app)
 render_engine.init_app(app)
 signals_engine.init_app(app)
 
-# Adding middlewares
-app.add_middleware(SessionMiddleware, secret_key=generate_salt())
 
-
-
-app.include_router(main.router)
-app.include_router(users.router, prefix="/users")
-app.include_router(groups.router, prefix="/groups")
-
+# Add middlewares
 @app.middleware("http")
 async def next_url_redirect(request: Request, call_next):
     """Check if 'next' query parameter is present in the request. If so, inject it as next url in an eventual Http303
@@ -41,8 +34,15 @@ async def next_url_redirect(request: Request, call_next):
         response.headers["location"] = url
     return response
 
+app.add_middleware(SessionMiddleware, secret_key=generate_salt())
+
+# Include routers
+app.include_router(main.router)
+app.include_router(users.router, prefix="/users")
+app.include_router(groups.router, prefix="/groups")
 
 
 if __name__ == "__main__":
     from uvicorn import run
+
     run(app, port=8080)

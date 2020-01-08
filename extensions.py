@@ -5,7 +5,7 @@ from typing import Callable, List, Optional
 from blinker import signal
 from fastapi import FastAPI
 from motor.motor_asyncio import AsyncIOMotorClient
-from motor.motor_asyncio import AsyncIOMotorDatabase
+from motor.motor_asyncio import AsyncIOMotorDatabase, AsyncIOMotorCollection
 from starlette.requests import Request
 from starlette.templating import Jinja2Templates
 
@@ -22,6 +22,7 @@ class AsyncIoMotor:
         async def close():
             await self.close_mongo_connection()
 
+        self.environment == env
         app.add_event_handler("startup", connect)
         app.add_event_handler("shutdown", close)
 
@@ -30,6 +31,19 @@ class AsyncIoMotor:
         self.client = AsyncIOMotorClient(
             "mongodb+srv://admin:3TrjBbW5fq27YX67@cluster0-txgpn.mongodb.net/?retryWrites=true&w=majority")
         self.database = self.client[f"scaling_spoon_{self.environment}"]
+        if self.environment == "development":
+            from helpers.security import get_password_hash
+            warning("Initialize fresh development database")
+            await self.database["users"].drop()
+            await self.database["groups"].drop()
+            await self.database["users"].insert_many([
+                {"email": "user@example.com", "password_hash": get_password_hash("pass")},
+                {"email": "admin@example.com", "password_hash": get_password_hash("pass")},
+            ])
+            await self.database["groups"].insert_many([
+                {"short": "first"},
+                {"short": "second"},
+            ])
         info("Database connection succeeded！")
 
     async def close_mongo_connection(self):

@@ -3,23 +3,26 @@ from __future__ import annotations
 from typing import Optional, List
 
 from bson import ObjectId
-from pydantic import BaseModel, EmailStr, root_validator, ValidationError
+from pydantic import BaseModel, EmailStr, root_validator
 
-from db import AsyncIOMotorDatabase
 from helpers.security import get_password_hash, generate_salt, verify_password
 from schemas import SignupForm, UpdateUserModel, ForceUnset
-
-
+from extensions import AsyncIOMotorDatabase
 
 
 class DbModel(BaseModel):
-    id: Optional[str]
+    id: str
 
     @root_validator(pre=True)
     def set_id(cls, values):
-        if values.get("_id") is not None:
+        if isinstance(values.get("_id"), ObjectId):
             values["id"] = str(values["_id"])
+        elif isinstance(values.get("_id"), str):
+            values["id"] = values["_id"]
         return values
+
+    def __hash__(self):
+        return hash(id)
 
 
 class Group(DbModel):
@@ -27,27 +30,31 @@ class Group(DbModel):
 
     @classmethod
     async def browse(cls, db: AsyncIOMotorDatabase) -> List[Group]:
-        return [cls.from_orm(item) async for item in db["groups"].find({})]
+        return [cls.parse_obj(item) async for item in db["groups"].find({})]
+
+    def __getitem__(self, item):
+        try:
+            return object.__getattribute__(self, item)
+        except AttributeError:
+            raise KeyError
 
 
 class User(DbModel):
     email: EmailStr
-    salt: str
     password_hash: str
     username: Optional[str] = None
     groups: Optional[List[Group]] = []
 
     def authenticate(self, password: str) -> bool:
-        return verify_password(self.salt + password, self.password_hash)
+        return verify_password(password, self.password_hash)
 
     @classmethod
     async def create(cls, db: AsyncIOMotorDatabase, signup_form: SignupForm) -> User:
         email = signup_form.email
         user = await db["users"].find_one({"email": email})
         if user is None:
-            salt = generate_salt()
-            password_hash = get_password_hash(salt + signup_form.password)
-            insert_result = await db["users"].insert_one({"email": email, "salt": salt, "password_hash": password_hash})
+            password_hash = get_password_hash(signup_form.password)
+            insert_result = await db["users"].insert_one({"email": email, "password_hash": password_hash})
             return await db["users"].find_one({"_id": insert_result.inserted_id})
         else:
             raise ValueError("Email is already in use.")
@@ -55,8 +62,9 @@ class User(DbModel):
     @classmethod
     async def read(cls, db: AsyncIOMotorDatabase, **kwargs) -> Optional[User]:
         user = await db["users"].find_one(kwargs)
+        print(user)
         if user is not None:
-            return cls.parse_obj(user)
+            return cls(**user)
         else:
             return None
 
@@ -70,3 +78,4 @@ class User(DbModel):
         if update_set: update["$set"] = update_set
         if update_unset: update["$unset"] = update_unset
         await db["users"].find_one_and_update(filter, update)
+
