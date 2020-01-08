@@ -9,6 +9,31 @@ from motor.motor_asyncio import AsyncIOMotorDatabase, AsyncIOMotorCollection
 from starlette.requests import Request
 from starlette.templating import Jinja2Templates
 
+from pickle import dumps, loads
+from bson.binary import Binary, USER_DEFINED_SUBTYPE
+from bson.codec_options import CodecOptions, TypeDecoder, TypeRegistry
+
+
+def fallback_pickle_encoder(value):
+    return Binary(dumps(value), USER_DEFINED_SUBTYPE)
+
+
+class PickledBinaryDecoder(TypeDecoder):
+    bson_type = Binary
+
+    def transform_bson(self, value):
+        if value.subtype == USER_DEFINED_SUBTYPE:
+            return loads(value)
+        return value
+
+
+codec_options = CodecOptions(type_registry=TypeRegistry(
+    [PickledBinaryDecoder()], fallback_encoder=fallback_pickle_encoder))
+
+
+def get_extra_collection(db: AsyncIOMotorDatabase, name: str) -> AsyncIOMotorCollection:
+    return db.get_collection(name, codec_options=codec_options)
+
 
 class AsyncIoMotor:
     client: AsyncIOMotorClient = None

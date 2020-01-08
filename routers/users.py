@@ -4,7 +4,7 @@ from fastapi import APIRouter, Form, Depends, HTTPException
 from starlette.requests import Request
 from starlette.responses import RedirectResponse
 
-from extensions import AsyncIOMotorDatabase, get_database, get_render, flash, get_message_flashes
+from extensions import AsyncIOMotorDatabase, get_database, get_render, flash, get_message_flashes, get_extra_collection
 from models import User, Group, ForceUnset
 from schemas import SignupForm, LoginForm, UpdateUserModel
 

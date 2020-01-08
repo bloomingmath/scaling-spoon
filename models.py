@@ -7,7 +7,7 @@ from pydantic import BaseModel, EmailStr, root_validator
 
 from helpers.security import get_password_hash, generate_salt, verify_password
 from schemas import SignupForm, UpdateUserModel, ForceUnset
-from extensions import AsyncIOMotorDatabase
+from extensions import AsyncIOMotorDatabase, get_extra_collection
 
 
 class DbModel(BaseModel):
@@ -61,7 +61,8 @@ class User(DbModel):
 
     @classmethod
     async def read(cls, db: AsyncIOMotorDatabase, **kwargs) -> Optional[User]:
-        user = await db["users"].find_one(kwargs)
+        users = get_extra_collection(db, "users")
+        user = await users.find_one(kwargs)
         print(user)
         if user is not None:
             return cls(**user)
