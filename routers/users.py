@@ -1,14 +1,14 @@
 from fastapi import APIRouter, Form, Depends, HTTPException
 from starlette.requests import Request
 from starlette.responses import RedirectResponse
+from typing import Callable
+router = APIRouter()
 
-from db.mongodb import AsyncIOMotorDatabase, get_database
+from extensions import AsyncIOMotorDatabase, get_database, get_render
 from helpers import flash, get_message_flashes
-from main import templates
-from models import User
+from models import User, Group, ForceUnset
 from schemas import SignupForm, LoginForm, UpdateUserModel
 
-router = APIRouter()
 
 
 async def get_current_user(request: Request, db: AsyncIOMotorDatabase = Depends(get_database)):
@@ -21,8 +21,7 @@ async def get_current_user(request: Request, db: AsyncIOMotorDatabase = Depends(
 
 @router.post("/change_username")
 async def change_username(db: AsyncIOMotorDatabase = Depends(get_database),
-                          current_user: User = Depends(get_current_user), username: str = Form(...)):
-    print("cu", current_user)
+                          current_user: User = Depends(get_current_user), username: str = Form(ForceUnset())):
     await User.update(db, UpdateUserModel(id=current_user.id, username=username))
     return RedirectResponse(url="/", status_code=303)
 
@@ -53,19 +52,19 @@ async def logout(request: Request):
 
 @router.get("/profile")
 async def profile(request: Request, flashes: list = Depends(get_message_flashes),
-                  db: AsyncIOMotorDatabase = Depends(get_database), current_user: User = Depends(get_current_user)):
+                  db: AsyncIOMotorDatabase = Depends(get_database), current_user: User = Depends(get_current_user), render: Callable = Depends(get_render)):
     context = {"flashes": flashes, "request": request, "current_user": current_user}
-    # public_groups = list(mc.Group.operations.select({"public": True}))
+    all_groups = await Group.browse(db)
     # active_groups = list(current_user.groups)
     # user_groups = [group.to_dict() for group in active_groups]
     # other_groups = [group.to_dict() for group in public_groups if group not in active_groups]
-    # context.update({"user_groups": user_groups, "other_groups": other_groups})
-    return templates.TemplateResponse("profile.html", context)
+    context.update({"all_groups": all_groups})
+    return render("profile.html", context)
 
 
 @router.get("/signup")
-async def signup_get(request: Request, flashes: list = Depends(get_message_flashes)):
-    return templates.TemplateResponse("signup.html", {"request": request, "flashes": flashes})
+async def signup_get(request: Request, flashes: list = Depends(get_message_flashes), render: Callable = Depends(get_render)):
+    return render("signup.html", {"request": request, "flashes": flashes})
 
 
 @router.post("/signup")

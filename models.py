@@ -1,13 +1,15 @@
 from __future__ import annotations
 
-from typing import Optional
+from typing import Optional, List
 
 from bson import ObjectId
-from pydantic import BaseModel, EmailStr, root_validator
+from pydantic import BaseModel, EmailStr, root_validator, ValidationError
 
-from db.mongodb import AsyncIOMotorDatabase
+from db import AsyncIOMotorDatabase
 from helpers.security import get_password_hash, generate_salt, verify_password
-from schemas import SignupForm, UpdateUserModel
+from schemas import SignupForm, UpdateUserModel, ForceUnset
+
+
 
 
 class DbModel(BaseModel):
@@ -20,11 +22,20 @@ class DbModel(BaseModel):
         return values
 
 
+class Group(DbModel):
+    short: str
+
+    @classmethod
+    async def browse(cls, db: AsyncIOMotorDatabase) -> List[Group]:
+        return [cls.from_orm(item) async for item in db["groups"].find({})]
+
+
 class User(DbModel):
     email: EmailStr
     salt: str
     password_hash: str
     username: Optional[str] = None
+    groups: Optional[List[Group]] = []
 
     def authenticate(self, password: str) -> bool:
         return verify_password(self.salt + password, self.password_hash)
@@ -43,10 +54,19 @@ class User(DbModel):
 
     @classmethod
     async def read(cls, db: AsyncIOMotorDatabase, **kwargs) -> Optional[User]:
-        return cls(**await db["users"].find_one(kwargs))
+        user = await db["users"].find_one(kwargs)
+        if user is not None:
+            return cls.parse_obj(user)
+        else:
+            return None
 
     @classmethod
     async def update(cls, db: AsyncIOMotorDatabase, update_user_model: UpdateUserModel) -> None:
         filter = {"_id": ObjectId(update_user_model.id)}
-        update = {"$set": update_user_model.dict(exclude={"id"}, exclude_none=True)}
+        update_set = {key: value for key, value in update_user_model.dict(exclude={"id"}, exclude_none=True).items() if
+                      not isinstance(value, ForceUnset)}
+        update_unset = {key: "" for key, value in update_user_model.dict().items() if isinstance(value, ForceUnset)}
+        update = {}
+        if update_set: update["$set"] = update_set
+        if update_unset: update["$unset"] = update_unset
         await db["users"].find_one_and_update(filter, update)

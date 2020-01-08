@@ -1,7 +1,11 @@
-from typing import Optional
+from typing import Optional, Union
 
 from fastapi import Form
 from pydantic import BaseModel, EmailStr, root_validator, validator
+
+
+class ForceUnset:
+    pass
 
 
 class SignupForm(BaseModel):
@@ -46,4 +50,7 @@ class LoginForm(BaseModel):
 class UpdateUserModel(BaseModel):
     id: str
     password: Optional[str]
-    username: Optional[str]
+    username: Union[str, ForceUnset, None]
+
+    class Config:
+        arbitrary_types_allowed = True
