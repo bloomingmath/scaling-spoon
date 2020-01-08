@@ -74,7 +74,7 @@
 {% endmacro %}
 
 {% macro group_unsubscription_form(id, short, next="/") %}
-<form class="single-click-form" action="/unsubscribe?next={{next}}" method="post" enctype="application/x-www-form-urlencoded">
+<form class="single-click-form" action="/groups/unsubscribe?next={{next}}" method="post" enctype="application/x-www-form-urlencoded">
     <input type="hidden" name="group_id" value="{{id}}"/>
     <button class="btn btn-lg btn-primary btn-block" type="submit" id="unsub_group_{{short}}_button">esci da {{ short }}</button>
 </form>

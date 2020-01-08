@@ -23,7 +23,7 @@
                 <p>Questi sono i gruppi di cui fai parte:</p>
                 <ul>
                     {% for group in user_groups %}
-                    <li>{{ group.short }} - {{ group_unsubscription_form(group.id, group.short, next="/profile") }}</li>
+                    <li>{{ group.short }} - {{ group_unsubscription_form(group.id, group.short, next="/users/profile") }}</li>
                     {% endfor %}
                 </ul>
                 <details id="other_group_details">
