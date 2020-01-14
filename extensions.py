@@ -59,7 +59,7 @@ class AsyncIoMotor:
         self.client = AsyncIOMotorClient()
         self.database = self.client[f"scaling_spoon_{self.environment}"]
         if self.environment == "development":
-            from helpers.security import get_password_hash
+            from new_extensions.security import get_password_hash
             warning("Initialize fresh development database")
             await self.database["nodes"].drop()
             await self.database["groups"].drop()
@@ -120,13 +120,10 @@ class SignalsEngine:
         sender.context_store["flashes"] = flashes
 
 
-mongo_engine = AsyncIoMotor()
+
 render_engine = RenderEngine()
 signals_engine = SignalsEngine()
 
-
-async def get_database() -> AsyncIOMotorDatabase:
-    return mongo_engine.database
 
 
 async def get_render() -> Callable:

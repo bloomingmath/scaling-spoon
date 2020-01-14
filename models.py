@@ -5,10 +5,9 @@ from typing import Optional, List
 from bson import ObjectId
 from pydantic import BaseModel, EmailStr, root_validator
 
-from helpers.security import get_password_hash, generate_salt, verify_password
+from new_extensions.security import get_password_hash, verify_password
 from schemas import SignupForm, UpdateUserModel, ForceUnset
 from extensions import AsyncIOMotorDatabase, get_extra_collection
-from collections import MutableMapping
 
 
 class DbModel(BaseModel):

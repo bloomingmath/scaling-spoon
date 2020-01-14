@@ -3,12 +3,14 @@ from starlette.middleware.sessions import SessionMiddleware
 from starlette.requests import Request
 from starlette.staticfiles import StaticFiles
 
-from extensions import mongo_engine, render_engine, signals_engine
-from helpers import generate_salt
+from extensions import render_engine, signals_engine
+# from extensions import mongo_engine
+from new_extensions.mongo import mongo_engine
+from new_extensions.security import generate_salt
 from routers import users, main, groups
 
 # Create fastapi application with rendering engine, motor mongodb connection, static files and signaling system
-app = FastAPI()
+app = FastAPI(title="Scaling spoon")
 
 app.mount("/static", StaticFiles(directory="static"), name="static")
 mongo_engine.init_app(app)
