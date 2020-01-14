@@ -8,10 +8,11 @@ from pydantic import BaseModel, EmailStr, root_validator
 from helpers.security import get_password_hash, generate_salt, verify_password
 from schemas import SignupForm, UpdateUserModel, ForceUnset
 from extensions import AsyncIOMotorDatabase, get_extra_collection
+from collections import MutableMapping
 
 
 class DbModel(BaseModel):
-    id: str
+    id: Optional[str] = None
 
     @root_validator(pre=True)
     def set_id(cls, values):
@@ -24,19 +25,27 @@ class DbModel(BaseModel):
     def __hash__(self):
         return hash(id)
 
+    def dict(self, *args, **kwargs):
+        exclude = kwargs.get("exclude", None)
+        if exclude is not None:
+            exclude.union({"id"})
+        else:
+            exclude = {"id"}
+        kwargs["exclude"] = exclude
+        return BaseModel.dict(self, *args, **kwargs)
+
+
+class Node(DbModel):
+    short: str
+
 
 class Group(DbModel):
     short: str
+    nodes: Optional[List[Node]] = []
 
     @classmethod
     async def browse(cls, db: AsyncIOMotorDatabase) -> List[Group]:
         return [cls.parse_obj(item) async for item in db["groups"].find({})]
-
-    def __getitem__(self, item):
-        try:
-            return object.__getattribute__(self, item)
-        except AttributeError:
-            raise KeyError
 
 
 class User(DbModel):
@@ -79,4 +88,3 @@ class User(DbModel):
         if update_set: update["$set"] = update_set
         if update_unset: update["$unset"] = update_unset
         await db["users"].find_one_and_update(filter, update)
-

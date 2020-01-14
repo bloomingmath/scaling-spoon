@@ -47,28 +47,38 @@ class AsyncIoMotor:
         async def close():
             await self.close_mongo_connection()
 
-        self.environment == env
+        self.environment = env
         app.add_event_handler("startup", connect)
         app.add_event_handler("shutdown", close)
 
     async def connect_to_mongo(self):
+        from models import User, Group, Node
         info("Connecting to the database...")
-        self.client = AsyncIOMotorClient(
-            "mongodb+srv://admin:3TrjBbW5fq27YX67@cluster0-txgpn.mongodb.net/?retryWrites=true&w=majority")
+        # self.client = AsyncIOMotorClient(
+        #     "mongodb+srv://admin:3TrjBbW5fq27YX67@cluster0-txgpn.mongodb.net/?retryWrites=true&w=majority")
+        self.client = AsyncIOMotorClient()
         self.database = self.client[f"scaling_spoon_{self.environment}"]
         if self.environment == "development":
             from helpers.security import get_password_hash
             warning("Initialize fresh development database")
-            await self.database["users"].drop()
+            await self.database["nodes"].drop()
             await self.database["groups"].drop()
-            await self.database["users"].insert_many([
-                {"email": "user@example.com", "password_hash": get_password_hash("pass")},
-                {"email": "admin@example.com", "password_hash": get_password_hash("pass")},
-            ])
-            await self.database["groups"].insert_many([
-                {"short": "first"},
-                {"short": "second"},
-            ])
+            await self.database["users"].drop()
+            node_list = [Node(short=f"node{i}") for i in range(10)]
+            first = Group(short="first", nodes=node_list[0:5])
+            second = Group(short="second", nodes=node_list[3:7])
+            user = User(**{
+                "email": "user@example.com",
+                "password_hash": get_password_hash("pass"),
+                "groups": [first, second]
+            })
+            admin = User(**{
+                "email": "admin@example.com",
+                "password_hash": get_password_hash("pass"),
+            })
+            await get_extra_collection(self.database, "nodes").insert_many([node.dict() for node in node_list])
+            await get_extra_collection(self.database, "groups").insert_many([first.dict(), second.dict()])
+            await get_extra_collection(self.database, "users").insert_many([user.dict(), admin.dict()])
         info("Database connection succeeded！")
 
     async def close_mongo_connection(self):
