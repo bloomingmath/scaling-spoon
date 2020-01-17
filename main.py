@@ -3,10 +3,10 @@ from starlette.middleware.sessions import SessionMiddleware
 from starlette.requests import Request
 from starlette.staticfiles import StaticFiles
 
-from new_extensions.signals import signals_engine
-from new_extensions.rendering import render_engine
-from new_extensions.mongo import mongo_engine
-from new_extensions.security import generate_salt
+from extensions.signals import signals_engine
+from extensions.rendering import render_engine
+from extensions.mongo import mongo_engine
+from extensions.security import generate_salt
 from routers import users, main, groups
 
 # Create fastapi application with rendering engine, motor mongodb connection, static files and signaling system

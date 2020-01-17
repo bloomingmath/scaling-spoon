@@ -4,9 +4,9 @@ from fastapi import APIRouter, Form, Depends, HTTPException
 from starlette.requests import Request
 from starlette.responses import RedirectResponse
 
-from new_extensions.signals import flash, get_message_flashes
-from new_extensions.rendering import get_render
-from new_extensions.mongo import get_motor, AsyncIoMotor
+from extensions.signals import flash, get_message_flashes
+from extensions.rendering import get_render
+from extensions.mongo import get_motor, AsyncIoMotor
 from models import User, Group, ForceUnset
 from schemas import SignupForm, LoginForm, UpdateUserModel
 from logging import debug

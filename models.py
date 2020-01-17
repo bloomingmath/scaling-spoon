@@ -5,9 +5,9 @@ from typing import Optional, List
 from bson import ObjectId
 from pydantic import BaseModel, EmailStr, root_validator
 
-from new_extensions.security import get_password_hash, verify_password
+from extensions.security import get_password_hash, verify_password
 from schemas import SignupForm, UpdateUserModel, ForceUnset
-from new_extensions.mongo import AsyncIoMotor
+from extensions.mongo import AsyncIoMotor
 from logging import debug
 
 class DbModel(BaseModel):

@@ -2,9 +2,9 @@ from fastapi import APIRouter, Form, Depends
 from starlette.requests import Request
 from starlette.responses import RedirectResponse
 from models import User
-from new_extensions.signals import flash, get_message_flashes
-from new_extensions.rendering import get_render
-from new_extensions.mongo import get_motor, AsyncIoMotor
+from extensions.signals import flash, get_message_flashes
+from extensions.rendering import get_render
+from extensions.mongo import get_motor, AsyncIoMotor
 from typing import Callable
 
 router = APIRouter()

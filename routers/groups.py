@@ -1,8 +1,8 @@
 from fastapi import APIRouter, Form, Depends  # , File, UploadFile
 from starlette.requests import Request
 from starlette.responses import RedirectResponse
-from new_extensions.rendering import get_render
-from new_extensions.mongo import get_motor, AsyncIoMotor
+from extensions.rendering import get_render
+from extensions.mongo import get_motor, AsyncIoMotor
 from models import User, Group
 from .users import get_current_user
 from bson import ObjectId
