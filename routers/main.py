@@ -1,8 +1,9 @@
-from fastapi import APIRouter, Form, Depends  # , File, UploadFile
+from fastapi import APIRouter, Form, Depends
 from starlette.requests import Request
 from starlette.responses import RedirectResponse
 from models import User
-from extensions import get_render, flash, get_message_flashes
+from new_extensions.signals import flash, get_message_flashes
+from new_extensions.rendering import get_render
 from new_extensions.mongo import get_motor, AsyncIoMotor
 from typing import Callable
 
@@ -15,7 +16,7 @@ async def home(request: Request, flashes: list = Depends(get_message_flashes),
     context = {"request": request, "flashes": flashes}
     try:
         email = request.session["authenticated_email"]
-        current_user = await User.read(db=motor.database, email=email)
+        current_user = await User.read(motor=motor, email=email)
         context["current_user"] = current_user
         # if current_user is not None:
         #     user_s_nodes = [ node.to_dict() for node in set([ node for group in current_user.groups for node in group.nodes ]) ]

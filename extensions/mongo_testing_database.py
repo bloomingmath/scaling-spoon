@@ -1,8 +1,8 @@
-from .security import get_password_hash
-from .mongo import AsyncIoMotor
 from logging import warning
-from models import Node, Group, User
 
+from models import Node, Group, User
+from .mongo import AsyncIoMotor
+from .security import get_password_hash
 
 
 async def init_testing_database(motor: AsyncIoMotor):
