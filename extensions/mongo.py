@@ -57,7 +57,7 @@ class AsyncIoMotor:
         self.database = self.client[f"{self.app_string}_{self.environment}"]
         if self.environment == "development":
             from .mongo_testing_database import init_testing_database
-            await init_testing_database(self)
+            await init_testing_database()
         info("Database connection succeeded！")
 
     async def close_mongo_connection(self):

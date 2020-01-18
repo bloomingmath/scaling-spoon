@@ -23,14 +23,14 @@
                 <p>Questi sono i gruppi di cui fai parte:</p>
                 <ul>
                     {% for group in user_groups %}
-                    <li>{{ group.short }} - {{ group_unsubscription_form(group.id, group.short, next="/users/profile") }}</li>
+                    <li>{{ group.short }} - {{ group_unsubscription_form(group._id, group.short, next="/users/profile") }}</li>
                     {% endfor %}
                 </ul>
                 <details id="other_group_details">
                     <summary>Per iscriverti ad un altro gruppo, scegli da questa lista:</summary>
                     <ul>
                         {% for group in other_groups %}
-                        <li>{{ group_subscription_form(group.id, group.short, next="/users/profile") }}</li>
+                        <li>{{ group_subscription_form(group._id, group.short, next="/users/profile") }}</li>
                         {% endfor %}
                     </ul>
                 </details>
