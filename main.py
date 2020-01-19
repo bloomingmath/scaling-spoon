@@ -7,7 +7,7 @@ from extensions.signals import signals_engine
 from extensions.rendering import render_engine
 from extensions.mongo import mongo_engine
 from extensions.security import generate_salt
-from routers import users, main, groups
+from routers import users, main, groups, contents
 
 # Create fastapi application with rendering engine, motor mongodb connection, static files and signaling system
 app = FastAPI(title="Scaling spoon")
@@ -42,6 +42,7 @@ app.add_middleware(SessionMiddleware, secret_key=generate_salt())
 app.include_router(main.router)
 app.include_router(users.router, prefix="/users")
 app.include_router(groups.router, prefix="/groups")
+app.include_router(contents.router, prefix="/contents")
 
 
 if __name__ == "__main__":
