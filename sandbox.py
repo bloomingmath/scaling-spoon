@@ -16,4 +16,6 @@ pprint(list(groups.aggregate([
     {"$lookup": {"from": "nodes", "localField": "all_nodes", "foreignField": "_id", "as": "nodes"}},
     {"$unwind": {"path": "$nodes"}},
     {"$replaceRoot": {"newRoot": "$nodes"}},
+    {"$lookup": {"from": "fs.files", "localField": "contents._id", "foreignField": "_id", "as": "contents"}},
+    {"$addFields": {"contents": "$contents.metadata"}},
 ])))

@@ -23,7 +23,15 @@
                     {% for node in user_s_nodes %}
                     <details>
                         <summary>{{node.short}}</summary>
+                        {% if node.contents %}
+                        <ul>
+                        {% for content in node.contents %}
+                            <li><a href="/content/{{ content.id }}">{{ content.short }}</a></li>
+                        {% endfor %}
+                        </ul>
+                        {% else %}
                         Qui le cose che si potranno fare in questo argomento.
+                        {% endif %}
                     </details>
                     {% endfor %}
                 </ul>

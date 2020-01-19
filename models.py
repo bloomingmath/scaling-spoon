@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import List
+from typing import List, Union
 
 from bson import ObjectId
 from pydantic import BaseModel, Field
@@ -38,6 +38,12 @@ class DBRef(BaseModel, metaclass=ObjectsProperty):
         json_encoders = {ObjectId: lambda x: str(x)}
 
 
+class Content(DBRef):
+    collection_name: str = "content"
+    short: str
+    filetype: str
+
+
 class Group(DBRef):
     collection_name: str = "groups"
     short: str
@@ -47,6 +53,7 @@ class Group(DBRef):
 class Node(DBRef):
     collection_name: str = "nodes"
     short: str
+    contents: List[Union[Content, DBRef]]
 
 
 class User(DBRef):

@@ -5,7 +5,7 @@ from bson.binary import Binary, USER_DEFINED_SUBTYPE
 from bson.codec_options import CodecOptions, TypeDecoder, TypeRegistry
 from fastapi import FastAPI
 from motor.motor_asyncio import AsyncIOMotorClient
-from motor.motor_asyncio import AsyncIOMotorDatabase, AsyncIOMotorCollection
+from motor.motor_asyncio import AsyncIOMotorDatabase, AsyncIOMotorCollection, AsyncIOMotorGridFSBucket
 
 
 def fallback_pickle_encoder(value):
@@ -28,12 +28,13 @@ codec_options = CodecOptions(type_registry=TypeRegistry(
 class AsyncIoMotor:
     app_string: str = None
     client: AsyncIOMotorClient = None
-    database: AsyncIOMotorDatabase = None
+    db: AsyncIOMotorDatabase = None
+    fs: AsyncIOMotorGridFSBucket = None
     environment: str = "development"
 
     def __getitem__(self, collection_name: str) -> AsyncIOMotorCollection:
         if not hasattr(self, collection_name):
-            setattr(self, collection_name, self.database.get_collection(collection_name, codec_options=codec_options))
+            setattr(self, collection_name, self.db.get_collection(collection_name, codec_options=codec_options))
         return getattr(self, collection_name)
 
     def init_app(self, app: FastAPI, uri: str = None, env: str = "development") -> None:
@@ -54,7 +55,8 @@ class AsyncIoMotor:
             self.client = AsyncIOMotorClient(uri)
         else:
             self.client = AsyncIOMotorClient()
-        self.database = self.client[f"{self.app_string}_{self.environment}"]
+        self.db = self.client[f"{self.app_string}_{self.environment}"]
+        self.fs = AsyncIOMotorGridFSBucket(self.db)
         if self.environment == "development":
             from .mongo_testing_database import init_testing_database
             await init_testing_database()
