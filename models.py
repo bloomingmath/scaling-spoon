@@ -45,7 +45,7 @@ class Group(DBRef):
 
 
 class Node(DBRef):
-    collection_name: str = "node"
+    collection_name: str = "nodes"
     short: str
 
 
