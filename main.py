@@ -13,8 +13,8 @@ from routers import users, main, groups, contents
 app = FastAPI(title="Scaling spoon")
 
 app.mount("/static", StaticFiles(directory="static"), name="static")
-# mongo_engine.init_app(app)
-mongo_engine.init_app(app, uri="mongodb+srv://admin:G3PjiDF79dDID2xt@cluster0-txgpn.mongodb.net/test?retryWrites=true&w=majority")
+mongo_engine.init_app(app)
+# mongo_engine.init_app(app, uri="mongodb+srv://admin:G3PjiDF79dDID2xt@cluster0-txgpn.mongodb.net/test?retryWrites=true&w=majority")
 render_engine.init_app(app)
 signals_engine.init_app(app)
 
