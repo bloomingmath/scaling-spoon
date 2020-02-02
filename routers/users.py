@@ -9,6 +9,7 @@ from extensions.security import get_password_hash
 from extensions.signals import flash, get_message_flashes
 from models import User, Group
 from schemas import SignupForm, LoginForm
+from logging import info
 
 router = APIRouter()
 
@@ -16,8 +17,10 @@ router = APIRouter()
 async def get_current_user(request: Request) -> User:
     try:
         email = request.session["authenticated_email"]
+        info(f"Auth-email: {email}")
         return User.parse_obj(await User.collection.find_one({"email": email}))
     except KeyError:
+        info(f"sessiond dict: {dict(request.session)}")
         raise HTTPException(status_code=403, detail="User is not authenticated.")
 
 
@@ -25,7 +28,7 @@ async def get_current_user_email(request: Request):
     try:
         return request.session["authenticated_email"]
     except KeyError:
-        raise HTTPException(status_code=403, detail="User is not authenticated.")
+        raise HTTPException(status_code=403, detail="User is not authenticated (email).")
 
 
 @router.post("/change_username")

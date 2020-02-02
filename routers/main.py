@@ -31,7 +31,7 @@ async def home(request: Request, flashes: list = Depends(get_message_flashes), r
             {"$lookup": {"from": "fs.files", "localField": "contents._id", "foreignField": "_id", "as": "contents"}},
             {"$addFields": {"contents": "$contents.metadata"}},
         ]).to_list(length=500)]
-        pprint(nodes)
+        # pprint(nodes)
         context["user_s_nodes"] = nodes
         if len(nodes) > 0:
             context["user_has_nodes"] = True
