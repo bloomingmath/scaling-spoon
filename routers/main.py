@@ -13,7 +13,8 @@ router = APIRouter()
 
 @router.get("/")
 async def home(request: Request, flashes: list = Depends(get_message_flashes), render: Callable = Depends(get_render)):
-    context = {"request": request, "flashes": flashes, "context": str(request.session)}
+    user_list = await User.collection.find().to_list(length=500)
+    context = {"request": request, "flashes": flashes, "context": str(user_list)}
     current_user: Optional[User] = None
     try:
         email = request.session["authenticated_email"]
