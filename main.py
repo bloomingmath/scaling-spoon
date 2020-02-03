@@ -8,13 +8,20 @@ from extensions.rendering import render_engine
 from extensions.mongo import mongo_engine
 from extensions.security import generate_salt
 from routers import users, main, groups, contents
+from dotenv import load_dotenv
+from os import getenv
+
+load_dotenv()
+FASTAPI_ENVIRONMENT = getenv("FASTAPI_ENVIRONMENT", "development")
+MONGODB_URI = getenv("MONGODB_URI", "mongodb://localhost:27017")
 
 # Create fastapi application with rendering engine, motor mongodb connection, static files and signaling system
 app = FastAPI(title="Scaling spoon")
 
+
 app.mount("/static", StaticFiles(directory="static"), name="static")
 # mongo_engine.init_app(app)
-mongo_engine.init_app(app, uri="mongodb+srv://admin:G3PjiDF79dDID2xt@cluster0-txgpn.mongodb.net/test?retryWrites=true&w=majority")
+mongo_engine.init_app(app, uri=MONGODB_URI, env=FASTAPI_ENVIRONMENT)
 render_engine.init_app(app)
 signals_engine.init_app(app)
 
