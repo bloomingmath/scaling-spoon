@@ -63,5 +63,6 @@ async def init_testing_database():
             "password_hash": get_password_hash("pass"),
             "username": "",
             "groups": [],
+            "is_admin": True,
         },
     ])

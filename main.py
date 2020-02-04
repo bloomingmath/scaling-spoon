@@ -7,7 +7,7 @@ from extensions.signals import signals_engine
 from extensions.rendering import render_engine
 from extensions.mongo import mongo_engine
 from extensions.security import generate_salt
-from routers import users, main, groups, contents
+from routers import users, main, groups, contents, admin
 from dotenv import load_dotenv
 from os import getenv
 
@@ -51,6 +51,7 @@ app.include_router(main.router)
 app.include_router(users.router, prefix="/users")
 app.include_router(groups.router, prefix="/groups")
 app.include_router(contents.router, prefix="/contents")
+app.include_router(admin.router, prefix="/admin")
 
 
 if __name__ == "__main__":

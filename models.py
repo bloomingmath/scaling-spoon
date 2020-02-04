@@ -60,6 +60,7 @@ class User(DBRef):
     password_hash: str
     username: str
     groups: List[DBRef]
+    is_admin: bool = False
 
     def authenticate(self, password: str) -> bool:
         return verify_password(password, self.password_hash)
