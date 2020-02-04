@@ -12,14 +12,14 @@
         <div class="section">
             <div class="row">
                 <div class="col-12 col-md-8 offset-md-2">
-                    <p class="lead"><b>Registrati</b> con il tuo indirizo mail. Non verrà condiviso con nessuno e sarà
-                        usato solo per identificarti.</p>
+                    <p class="lead"><b>Accedi</b> con le tue credenziali. Se non hai ancora un profilo {{
+                        page('signup_get', 'registrati') }} e comincia ad usare l'applicazione.</p>
                 </div>
             </div>
             <div class="row">
                 <div class="col-12 col-md-8 offset-md-2">
-                    {% from "forms.html" import signup_form with context %}
-                    {{ signup_form() }}
+                    {% from "forms.html" import login_form with context %}
+                    {{ login_form() }}
                 </div>
             </div>
         </div>

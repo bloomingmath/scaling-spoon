@@ -22,7 +22,7 @@ class RenderEngine:
 render_engine = RenderEngine()
 
 
-async def get_render() -> Callable:
+def get_render() -> Callable:
     def render(*args, **kwargs):
         for j2t in render_engine.jinja2templates:
             try:

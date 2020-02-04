@@ -1,43 +1,23 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-
     <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <meta name="description" content="">
-    <meta name="author" content="">
-
     <title>Bloomingmath</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+    <meta name="description" content="Una applicazione per lo studio della matematica.">
+    <meta name="author" content="Matteo Bortolotto">
 
-    <!-- Bootstrap core CSS -->
-    <link href="/static/css/bootstrap.min.css" rel="stylesheet"/>
-    <link href="/static/css/main_style.css" rel="stylesheet"/>
-    <link href="/static/css/wide_forms.css" rel="stylesheet"/>
-    <link href="/static/css/react_navbar.css" rel="stylesheet"/>
-    <!-- <link rel="stylesheet" type="text/css" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css"> -->
-    <link rel="stylesheet" type="text/css" href="/static/css/font-awesome.min.css">
-    <script type="text/x-mathjax-config">
-    MathJax.Hub.Config({
-      tex2jax: {
-        inlineMath: [['$','$'], ['\\(','\\)']],
-        processEscapes: true
-      },
-      TeX: {
-         equationNumbers: {  autoNumber: "AMS"  },
-         extensions: ["AMSmath.js", "AMSsymbols.js", "autobold.js", "color.js"]
-      }
-    });
+    <link href="{{ url_for('static', path='/img/favicon.ico') }}" rel="icon" type="image/png">
 
-    </script>
-    <!-- <script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML' async></script> -->
-    <script src='/static/js/MathJax.js'></script>
-    <script src="/static/js/TeX-MML-AM_CHTML.js"></script>
-    <!-- <script src="/static/js/autobold.js"></script>
-    <script src="/static/js/color.js"></script> -->
+    <link rel="stylesheet" href="{{ url_for('static', path='/vendor/bootstrap/bootstrap.min.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', path='/css/lazy.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', path='/css/demo.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', path='/css/font-awesome-all.css') }}">
+<!--    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.6.0/css/all.css"-->
+<!--          integrity="sha384-aOkxzJ5uQz7WBObEZcHvV5JvRW3TUc2rNPA7pe3AwnsUohiw1Vj2Rgx2KSOkF5+h" crossorigin="anonymous">-->
 </head>
-
-<body>
+<body class="index bg-light">
 
 <!-- Navigation -->
 {% block nav %}{% endblock %}
@@ -52,7 +32,7 @@
         {% for message, category in flashes %}
         <div class="row">
             <div class="col">
-                <div class="alert alert-{{category}} alert-dismissible fade show" role="alert">
+                <div class="alert alert-{{category}} alert-dismissible fade show"  role="alert">
                     <strong>Guacamole!</strong> {{ message }}
                     <button type="button" class="close" data-dismiss="alert" aria-label="Close">
                         <span aria-hidden="true">&times;</span>
@@ -65,9 +45,16 @@
 </div>
 {% endif %}
 
-<!-- Bootstrap core JavaScript -->
-<script src="/static/js/jquery.slim.min.js"></script>
-<script src="/static/js/bootstrap.bundle.min.js"></script>
-</body>
 
+<!-- jQuery first, then Popper.js, then Bootstrap JS -->
+<script src="{{ url_for('static', path='/vendor/jquery/jquery.min.js') }}"></script>
+<script src="{{ url_for('static', path='/vendor/popper/popper.min.js') }}"></script>
+<script src="{{ url_for('static', path='/vendor/bootstrap/bootstrap.min.js') }}"></script>
+
+<!-- optional plugins -->
+<script src="{{ url_for('static', path='/vendor/nouislider/js/nouislider.min.js') }}"></script>
+
+<!--   lazy javascript -->
+<script src="{{ url_for('static', path='/js/lazy.js') }}"></script>
+</body>
 </html>

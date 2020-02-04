@@ -1,0 +1,12 @@
+{% macro brand() %}
+<a class="navbar-brand d-flex align-items-center" href="/">
+    <img src="{{ url_for('static', path='/img/Toicon-icon-lines-and-angles-bloom.svg') }}" alt="Icon from Shannon E Thomas/toicon.com" title="Icon from Shannon E Thomas/toicon.com" class="mr-2" height="30" />
+    Bloomingmath
+</a>
+{% endmacro %}
+
+{% macro page(endpoint=None, text=None) %}
+<a href="{% if endpoint %}{{ url_for(endpoint) }}{% else %}/{% endif %}">
+{% if text %}{{ text }}{% else %}{% if endpoint %}{{ endpoint }}{% else %}generic link{% endif %}{% endif %}
+</a>
+{% endmacro %}

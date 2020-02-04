@@ -10,6 +10,7 @@ from extensions.signals import flash, get_message_flashes
 from models import User, Group
 from schemas import SignupForm, LoginForm
 from logging import info
+from pydantic import ValidationError
 
 router = APIRouter()
 
@@ -40,12 +41,18 @@ async def change_username(current_user_email: str = Depends(get_current_user_ema
     return RedirectResponse(url="/", status_code=303)
 
 
+@router.get("/login")
+async def login_get(request: Request, flashes: list = Depends(get_message_flashes),
+                     render: Callable = Depends(get_render)):
+    return render("login.html", {"request": request, "flashes": flashes})
+
+
 @router.post("/login")
 async def login_post(request: Request, login_form: LoginForm = Depends()):
-    user: User = User.parse_obj(await User.collection.find_one({"email": login_form.email}))
-    if user is not None and user.authenticate(login_form.password):
+    try:
+        user: User = User.parse_obj(await User.collection.find_one({"email": login_form.email}))
         request.session["authenticated_email"] = user.email
-    else:
+    except (ValidationError, KeyError, AttributeError):
         try:
             del request.session["authenticated_email"]
         except KeyError:

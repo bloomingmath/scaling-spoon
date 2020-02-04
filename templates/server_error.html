@@ -2,7 +2,8 @@
 
 {% block nav %}
 {% from "macros.html" import navbar with context %}
-{{ navbar() }}
+{% from "forms.html" import inline_login_form with context %}
+{{ navbar(right_content=inline_login_form()) }}
 {% endblock %}
 
 {% block content %}
@@ -12,14 +13,8 @@
         <div class="section">
             <div class="row">
                 <div class="col-12 col-md-8 offset-md-2">
-                    <p class="lead"><b>Registrati</b> con il tuo indirizo mail. Non verrà condiviso con nessuno e sarà
-                        usato solo per identificarti.</p>
-                </div>
-            </div>
-            <div class="row">
-                <div class="col-12 col-md-8 offset-md-2">
-                    {% from "forms.html" import signup_form with context %}
-                    {{ signup_form() }}
+                    <p class="lead"><b>C'è stato un errore.</b> Non sappiamo come mai, ma abbiamo registrato tutte le
+                        informazioni rilevanti e presto risolveremo il problema. Grazie per la pazienza.</p>
                 </div>
             </div>
         </div>

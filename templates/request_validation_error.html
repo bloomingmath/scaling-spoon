@@ -2,7 +2,8 @@
 
 {% block nav %}
 {% from "macros.html" import navbar with context %}
-{{ navbar() }}
+{% from "forms.html" import inline_login_form with context %}
+{{ navbar(right_content=inline_login_form()) }}
 {% endblock %}
 
 {% block content %}
@@ -12,17 +13,19 @@
         <div class="section">
             <div class="row">
                 <div class="col-12 col-md-8 offset-md-2">
-                    <p class="lead"><b>Registrati</b> con il tuo indirizo mail. Non verrà condiviso con nessuno e sarà
-                        usato solo per identificarti.</p>
-                </div>
-            </div>
-            <div class="row">
-                <div class="col-12 col-md-8 offset-md-2">
-                    {% from "forms.html" import signup_form with context %}
-                    {{ signup_form() }}
+                    <p class="lead"><b>Qualcosa non va.</b> Probabilmente le informazioni inviate sono errate. Di seguito le informazioni che si sono potute recuperare.</p>
                 </div>
             </div>
         </div>
+        {% if exception %}
+        <div class="section">
+            <div class="row">
+                <div class="col-12 col-md-8 offset-md-2 bg-warning">
+                    <pre>{{ exception }}</pre>
+                </div>
+            </div>
+        </div>
+        {% endif %}
     </div>
 </div>
 {% endblock %}

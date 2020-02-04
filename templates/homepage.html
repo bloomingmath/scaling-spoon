@@ -1,51 +1,22 @@
 {% extends "base.html" %}
 
 {% block nav %}
-{% from "navbar.html" import navbar %}
-{{ navbar(current_user) }}
+{% from "macros.html" import navbar with context %}
+{% from "forms.html" import inline_login_form with context %}
+{{ navbar(right_content=inline_login_form()) }}
 {% endblock %}
 
 {% block content %}
-{% from "forms.html" import group_subscription_form %}
-{% from "forms.html" import group_unsubscription_form %}
-<div class="jumbotron">
+{% from "links.html" import page with context %}
+<div class="intro bg-light">
     <div class="container">
-        <h1 class="display-4">Benvenut@ {% if current_user %}{{ current_user.username }}{% else %}Eternauta{% endif %}</h1>
-        <div class="row">
-            <div class="col col-sm-10 col-md-6">
-                {% if current_user %}
-                <p>Siamo felici che tu abbia un account, presto la pagina sarà completa e funzionante.</p>
-                <p>Nel frattempo, controlla il tuo <a href="/users/profile">profilo</a>.</p>
-
-                {% if user_has_nodes %}
-                <p>Questi sono gli argomenti a tua disposizione:</p>
-                <ul>
-                    {% for node in user_s_nodes %}
-                    <details>
-                        <summary>{{node.short}}</summary>
-                        {% if node.contents %}
-                        <ul>
-                        {% for content in node.contents %}
-                            <li><a href="/contents/{{ content.id }}">{{ content.short }}</a></li>
-                        {% endfor %}
-                        </ul>
-                        {% else %}
-                        Qui le cose che si potranno fare in questo argomento.
-                        {% endif %}
-                    </details>
-                    {% endfor %}
-                </ul>
-                {% else %}
-                <p>Non hai argomenti a disposizione. Vai alla pagina del tuo profilo e iscriviti a qualche gruppo: avrai accesso a tutti gli argomenti dei gruppi che selezioni.</p>
-                {% endif %}
-
-                {% else %}
-                <p>Se non hai ancora un account, procedi alla <a href="/users/signup">registrazione</a>.</p>
-                <div class="wide-form-container">
-                    {% from "forms.html" import login_form %}
-                    {{ login_form() }}
+        <div class="section">
+            <div class="row">
+                <div class="col-12 col-md-8 offset-md-2">
+                    <p class="lead"><b>Benvenut@ Eternauta.</b> Se hai già un profilo per usare l'applicazione {{
+                        page('login_get', 'accedi') }} con le tue credenziali. Se non hai ancora un profilo {{
+                        page('signup_get', 'registrati') }} e comincia ad usare l'applicazione.</p>
                 </div>
-                {% endif %}
             </div>
         </div>
     </div>

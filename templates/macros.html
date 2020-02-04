@@ -1,76 +1,20 @@
-{% macro file_upload_form() %}
-<form action="/tmp/upload" method="post" enctype="multipart/form-data">
-    <div>
-        Short name:
-        <input type="text" name="short" id="short" />
+{% macro navbar(right_content=None) %}
+{% from "links.html" import brand with context %}
+<nav class="navbar navbar-expand-lg navbar-light bg-light mb-4">
+    <div class="container">
+        {{ brand() }}
+        {% if right_content %}
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNavDropdown-3"
+                aria-controls="navbarNavDropdown-3"
+                aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse mr-auto text-center" id="navbarNavDropdown-3">
+            <div class="navbar-nav ml-auto">
+                {{ right_content }}
+            </div>
+        </div>
+        {% endif %}
     </div>
-    <div>
-        Filetype:
-        <select name="filetype">
-            <option value="pdf">pdf</option>
-            <option value="md">md</option>
-            <option value="png">png</option>
-            <option value="mp4">mp4</option>
-        </select>
-    </div>
-    <div>
-        Select file to upload:
-        <input type="file" name="file" id="file" />
-    </div>
-    <div>
-        Description (optional)
-        <textarea name="long" id="long"></textarea>
-    </div>
-    <div>
-        <input type="submit" value="Upload File" name="submit" />
-    </div>
-</form>
-{% endmacro %}
-
-{% macro collapsible_list(list_name, list) %}
-<details>
-  <summary>{{ list_name }}</summary>
-  <ul>
-      {% for item in list %}
-      <li>{{ item }}</li>
-      {% endfor %}
-  </ul>
-</details>
-{% endmacro %}
-
-{% macro collapsible_link_list(summary, list) %}
-<details>
-  <summary>{{ summary }}</summary>
-  <ul>
-      {% for short, href in list %}
-      <li><a href="{{href}}">{{ short }}</a></li>
-      {% endfor %}
-  </ul>
-</details>
-{% endmacro %}
-
-{% macro admin_like_collapsible(summary, data_dict) %}
-<details>
-    <summary>{{ summary }}</summary>
-    <ul>
-        {% for short, item_dict in data_dict.items() %}
-        <li>{{ short }}</li>
-        {% endfor %}
-        <li>Add: {{ group_creation_form() }}</li>
-    </ul>
-</details>
-{% endmacro %}
-
-{% macro group_creation_form() %}
-<form action="/tmp/admin/create/group" method="post" enctype="application/x-www-form-urlencoded">
-    <div>
-        Short: <input type="text" name="short">
-    </div>
-    <div>
-        Long (opt): <textarea name="long"></textarea>
-    </div>
-    <div>
-        <input type="submit" value="Create" name="submit" />
-    </div>
-</form>
+</nav>
 {% endmacro %}
