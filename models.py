@@ -1,13 +1,42 @@
-from typing import List, Union
+from typing import List, Optional
 
 from bson import ObjectId
+from bson.errors import InvalidId
 from pydantic import BaseModel, Field
 from pydantic import EmailStr
+from pydantic import ValidationError
 from pydantic.main import ModelMetaclass
 
 from extensions.mongo import mongo_engine, AsyncIOMotorCollection
 from extensions.security import verify_password
-from pydantic import ValidationError
+
+MAX_FIND = 500
+
+
+def get_id(obj):
+    try:
+        return ObjectId(obj)
+    except (InvalidId, TypeError):
+        try:
+            return ObjectId(obj.id)
+        except (InvalidId, TypeError, AttributeError):
+            try:
+                return ObjectId(obj["id"])
+            except (InvalidId, TypeError, KeyError):
+                try:
+                    return ObjectId(obj["_id"])
+                except (InvalidId, TypeError, KeyError):
+                    raise TypeError(f"Can't find id in {obj!r}.")
+
+
+def get_cn(obj):
+    try:
+        return obj.collection_name
+    except AttributeError:
+        try:
+            return obj["collection_name"]
+        except KeyError:
+            raise TypeError(f"Cant' find collection_name in {obj!r}.")
 
 
 class ObjectIdStr(str):
@@ -28,7 +57,7 @@ class ObjectsProperty(ModelMetaclass):
         return mongo_engine[getattr(cls, "__field_defaults__").get("collection_name")]
 
 
-class DBRef(BaseModel, metaclass=ObjectsProperty):
+class Model(BaseModel, metaclass=ObjectsProperty):
     id: ObjectIdStr = Field(..., alias="_id")
     collection_name: str = Field(...)
 
@@ -37,71 +66,77 @@ class DBRef(BaseModel, metaclass=ObjectsProperty):
         json_encoders = {ObjectId: lambda x: str(x)}
         orm_mode = True
 
-    async def deref(self):
-        return await mongo_engine[self.collection_name].find_one({"_id": self.id})
+    @classmethod
+    async def find_one(cls, filter: dict):
+        try:
+            return cls.parse_obj(await cls.collection.find_one(filter))
+        except ValidationError:
+            return None
 
-    async def unshallow(self, obj=None, level=1):
-        if obj is None:
-            obj = self.dict()
-        if level == 1:
-            return obj
-        for name, value in obj.items():
-            if isinstance(value, list):
-                obj[name] = [
+    @classmethod
+    async def find_one_and_set(cls, filter: dict, set: dict):
+        await cls.collection.find_one_and_update(
+            filter=filter,
+            update={"$set": set},
+        )
 
-                ]
-            try:
-                obj[name] = await self.unshallow(obj= await DBRef.parse_obj(value).deref(), level=level - 1)
-            except ValidationError:
-                try:
-                    obj[name] = [ await self.unshallow(obj= await DBRef.parse_obj(item).deref(), level=level - 1) for item in value]
-                except (TypeError, ValidationError):
-                    pass
-        return obj
-
-    # async def unshallow(self, level=1):
-    #     _dict = {}
-    #     for name, field in self.fields.items():
-    #         if name == "id" or name == "collection_name":
-    #             _dict[name] = getattr(self, name)
-    #         elif level == 1:
-    #             _dict[name] = getattr(self, name)
-    #         elif level > 1:
-    #             if field.type_ == DBRef and not field.is_complex():
-    #                 dbref = getattr(self, name)
-    #                 _dict[name] = getattr(self, name)
-    #             elif field.type_ == DBRef and field.is_complex():
-    #                 _dict[name] = [dbref.unshallow(level=level - 1) for dbref in getattr(self, name)]
-    #             else:
-    #                 _dict[name] = getattr(self, name)
-    #         else:
-    #             pass
+    @classmethod
+    async def insert_one(cls, obj: dict):
+        await cls.collection.insert_one(obj)
 
 
-class Content(DBRef):
+class Content(Model):
     collection_name: str = "content"
     short: str
     filetype: str
 
 
-class Group(DBRef):
+class Group(Model):
     collection_name: str = "groups"
     short: str
-    nodes: List[DBRef]
+    nodes: List[Model]
+
+    @classmethod
+    async def find_by_user(cls, user: "User") -> List["Group"]:
+        return await cls.collection.find({"_id": {"$in": [group.id for group in user.groups]}}).to_list(length=MAX_FIND)
+
+    @classmethod
+    async def find_by_not_user(cls, user: "User") -> List["Group"]:
+        return await cls.collection.find({"_id": {"$nin": [group.id for group in user.groups]}}).to_list(length=MAX_FIND)
 
 
-class Node(DBRef):
+class Node(Model):
     collection_name: str = "nodes"
     short: str
-    contents: List[DBRef]
+    contents: List[Model]
+
+    @classmethod
+    async def find_by_groups(cls, groups: list) -> List["Node"]:
+        db_models = []
+        for item in groups:
+            try:
+                assert get_cn(item) == "groups"
+                db_models.append({"id": get_id(item), "collection_name": get_cn(item)})
+            except (AssertionError, TypeError):
+                pass
+        return [Node.parse_obj(item) for item in await Group.collection.aggregate([
+            {"$match": {"_id": {"$in": [model["id"] for model in db_models]}}},
+            {"$unwind": {"path": "$nodes"}},
+            {"$group": {"_id": None, "all_nodes": {"$push": "$nodes._id"}}},
+            {"$lookup": {"from": "nodes", "localField": "all_nodes", "foreignField": "_id", "as": "nodes"}},
+            {"$unwind": {"path": "$nodes"}},
+            {"$replaceRoot": {"newRoot": "$nodes"}},
+            {"$lookup": {"from": "fs.files", "localField": "contents._id", "foreignField": "_id", "as": "contents"}},
+            {"$addFields": {"contents": "$contents.metadata"}},
+        ]).to_list(length=MAX_FIND)]
 
 
-class User(DBRef):
+class User(Model):
     collection_name: str = "users"
     email: EmailStr
     password_hash: str
     username: str
-    groups: List[DBRef]
+    groups: List[Model]
     is_admin: bool = False
     is_blocked: bool = False
 

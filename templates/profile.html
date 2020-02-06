@@ -8,20 +8,24 @@
 
 {% block content %}
 {% from "macros.html" import username_from_user with context %}
-{% from "links.html" import page with context %}
+{% from "forms.html" import inline_user_change_username with context %}
+{% from "forms.html" import inline_user_change_password with context %}
 <div class="intro bg-light">
     <div class="container">
         <div class="section">
             <div class="row">
                 <div class="col-12 col-md-8 offset-md-2">
-                    <p class="lead"><b>Benvenut@ {{ username_from_user(current_user) }}.</b> Se vuoi modificare alcuni dati del tuo {{ page("profile", "profilo") }}, accedi alla pagina dedicata.</p>
+                    <p class="lead"><b>Profilo di {{ username_from_user(current_user) }}.</b> Questo è il tuo profilo.
+                        Puoi usare questa pagina per cambiare il tuo nome utente, la tua password o i gruppi di cui fai
+                        parte.</p>
                 </div>
             </div>
         </div>
         <div class="section">
             <div class="row">
                 <div class="col-12 col-md-8 offset-md-2">
-                    <p>{{ current_user }}</p>
+                    <p>{{ inline_user_change_username(current_user.username) }}</p>
+                    <p>{{ inline_user_change_password() }}</p>
                 </div>
             </div>
         </div>

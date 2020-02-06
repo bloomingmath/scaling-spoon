@@ -52,7 +52,7 @@
     Toggle user's block
     <div class="form-group flex-grow-1">
         <input name="user_email" type="email" class="form-control flex-grow-1 mr-2"
-               id="tiled_signup_form_email" placeholder="user email" >
+               id="tiled_signup_form_email" placeholder="user email">
     </div>
 </form>
 {% endmacro %}
@@ -62,7 +62,7 @@
       enctype="application/x-www-form-urlencoded">
     Reset user's password to 'pass'
     <div class="form-group flex-grow-1">
-        <input name="user_email" type="email" class="form-control flex-grow-1 mr-2" placeholder="user email" >
+        <input name="user_email" type="email" class="form-control flex-grow-1 mr-2" placeholder="user email">
     </div>
 </form>
 {% endmacro %}
@@ -107,6 +107,31 @@
         <input name="user_email" type="text" class="form-control flex-grow-1 mr-2" placeholder="email">
         <input name="group_short" type="text" class="form-control flex-grow-1 mr-2" placeholder="group short">
         <button type="submit" class="btn btn-primary form-control d-none">Submit</button>
+    </div>
+</form>
+{% endmacro %}
+
+{% macro inline_user_change_username(username) %}
+<form class="form-subscribe mb-3" action="{{ url_for('user_change_username') + '?next=' + url_for('profile') }}"
+      method="post" enctype="application/x-www-form-urlencoded">
+    Cambia nome utente
+    <div class="form-group flex-grow-1">
+        <input name="username" type="text" class="form-control flex-grow-1 mr-2" placeholder="Il tuo nome" value="{{ username }}">
+        <button type="submit" class="btn btn-primary form-control">Invia</button>
+    </div>
+</form>
+{% endmacro %}
+
+{% macro inline_user_change_password() %}
+<form class="form-subscribe mb-3" action="{{ url_for('user_change_password') + '?next=' + url_for('profile') }}"
+      method="post" enctype="application/x-www-form-urlencoded">
+    Cambia password
+    <div class="form-group flex-grow-1">
+        <input name="email" type="email" class="form-control flex-grow-1 mr-2" placeholder="Indirizzo email">
+        <input name="old_password" type="password" class="form-control flex-grow-1 mr-2" placeholder="Vecchia password">
+        <input name="password" type="password" class="form-control flex-grow-1 mr-2" placeholder="Nuova password">
+        <input name="password_confirmation" type="password" class="form-control flex-grow-1 mr-2" placeholder="Conferma nuova password">
+        <button type="submit" class="btn btn-primary form-control">Invia</button>
     </div>
 </form>
 {% endmacro %}

@@ -1,6 +1,6 @@
 from logging import warning
 
-from models import Node, Group, User, Content, DBRef
+from models import Node, Group, User, Content, Model
 from extensions.mongo import mongo_engine
 from .security import get_password_hash
 from bson import ObjectId

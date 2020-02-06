@@ -8,23 +8,6 @@ from motor.motor_asyncio import AsyncIOMotorClient
 from motor.motor_asyncio import AsyncIOMotorDatabase, AsyncIOMotorCollection, AsyncIOMotorGridFSBucket
 
 
-def fallback_pickle_encoder(value):
-    return Binary(dumps(value), USER_DEFINED_SUBTYPE)
-
-
-class PickledBinaryDecoder(TypeDecoder):
-    bson_type = Binary
-
-    def transform_bson(self, value):
-        if value.subtype == USER_DEFINED_SUBTYPE:
-            return loads(value)
-        return value
-
-
-codec_options = CodecOptions(type_registry=TypeRegistry(
-    [PickledBinaryDecoder()], fallback_encoder=fallback_pickle_encoder))
-
-
 class AsyncIoMotor:
     app_string: str = None
     client: AsyncIOMotorClient = None
@@ -34,7 +17,7 @@ class AsyncIoMotor:
 
     def __getitem__(self, collection_name: str) -> AsyncIOMotorCollection:
         if not hasattr(self, collection_name):
-            setattr(self, collection_name, self.db.get_collection(collection_name, codec_options=codec_options))
+            setattr(self, collection_name, self.db.get_collection(collection_name))
         return getattr(self, collection_name)
 
     def init_app(self, app: FastAPI, uri: str = None, env: str = "development") -> None:

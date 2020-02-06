@@ -7,7 +7,7 @@ from starlette.responses import RedirectResponse
 from extensions.rendering import get_render
 from extensions.security import get_password_hash
 from extensions.signals import flash, get_message_flashes
-from models import User, Group, Node, DBRef
+from models import User, Group, Node, Model
 from schemas import SignupForm, LoginForm
 from logging import info
 from pprint import pformat, pprint
@@ -34,7 +34,7 @@ async def get_current_admin(request: Request, session_email: str = Depends(get_c
 
 
 # @router.post("/change_username")
-# async def change_username(current_user_email: str = Depends(get_current_user_email), username: str = Form("")):
+# async def change_username(current_user_email: str = Depends(get_session_email), username: str = Form("")):
 #     await User.collection.find_one_and_update(
 #         filter={"email": current_user_email},
 #         update={"$set": {"username": username}}
@@ -140,7 +140,7 @@ async def admin_create_user(request: Request, user_email: str = Form(...), admin
 async def admin_toggle_node(node_short: str = Form(...), group_short: str = Form(...),
                             admin: User = Depends(get_current_admin)):
     group = Group.parse_obj(await Group.collection.find_one({"short": group_short}))
-    node_ref = DBRef.from_orm(Node.parse_obj(await Node.collection.find_one({"short": node_short})))
+    node_ref = Model.from_orm(Node.parse_obj(await Node.collection.find_one({"short": node_short})))
     if node_ref in group.nodes:
         nodes = [ref for ref in group.nodes if ref != node_ref]
     else:
@@ -157,7 +157,7 @@ async def admin_toggle_group(user_email: str = Form(...), group_short: str = For
                             admin: User = Depends(get_current_admin)):
     group = Group.parse_obj(await Group.collection.find_one({"short": group_short}))
     user = User.parse_obj(await User.collection.find_one({"email": user_email}))
-    group_ref = DBRef.from_orm(group)
+    group_ref = Model.from_orm(group)
     if group_ref in user.groups:
         groups = [ref for ref in user.groups if ref != group_ref]
     else:
