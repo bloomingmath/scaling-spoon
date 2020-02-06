@@ -1,6 +1,6 @@
 from typing import Callable
 
-from fastapi import APIRouter, Form, Depends, HTTPException
+from fastapi import APIRouter, Form, Depends, HTTPException, File, UploadFile
 from starlette.requests import Request
 from starlette.responses import RedirectResponse
 
@@ -13,6 +13,7 @@ from logging import info
 from pprint import pformat, pprint
 from .dependencies import get_current_admin
 from pydantic import EmailStr
+from bson import ObjectId
 
 router = APIRouter()
 
@@ -26,6 +27,8 @@ async def dashboard(request: Request,
     context["users_list"] = await User.find_with_complete_groups()
     context["groups_list"] = await Group.find_with_complete_nodes()
     context["nodes_list"] = await Node.find_with_complete_contents()
+    context["contents_list"] = await Content.find({})
+    print(await Content.find({}))
     return render("admin_dashboard.html", context)
 
 
@@ -151,4 +154,24 @@ async def admin_toggle_content(node_short: str = Form(...), content_id_str: str 
         set={"contents": node.contents}
     )
     print("Toggle content", node.contents)
+    return RedirectResponse(url="/", status_code=303)
+
+
+@router.post("/upload_content")
+async def admin_upload_content(request: Request,
+                               content_data: UploadFile = File(...),
+                               content_short: str = Form(...),
+                               content_filetype: str = Form(...),
+                               admin: User = Depends(get_current_admin)):
+    from extensions.mongo import mongo_engine
+    file_id = ObjectId()
+    new_content = Content(id=file_id, short=content_short, filetype=content_filetype)
+    await Content.insert_one(new_content.dict(by_alias=True))
+    grid_in = mongo_engine.fs.open_upload_stream_with_id(
+        file_id,
+        content_data.filename,
+        metadata=new_content.dict(by_alias=True))
+    with content_data.file as f:
+        await grid_in.write(f.read())
+        await grid_in.close()
     return RedirectResponse(url="/", status_code=303)

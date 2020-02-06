@@ -8,13 +8,13 @@ from bson import ObjectId
 
 async def init_testing_database():
     warning("Initialize fresh development database")
-    await Node.collection.drop()
-    await Group.collection.drop()
     await User.collection.drop()
-
+    await Group.collection.drop()
+    await Node.collection.drop()
+    await Content.collection.drop()
     async for data in mongo_engine.fs.find():
-        warning(f"Deleting:{data._id}")
         mongo_engine.fs.delete(data._id)
+
     # Pdf example content
     file_id = ObjectId()
     content_1 = Content(id=file_id, short="An example of pdf file.", filetype="pdf")

@@ -58,6 +58,10 @@ class Model(BaseModel, metaclass=ObjectsProperty):
         orm_mode = True
 
     @classmethod
+    async def find(cls, filter: dict):
+        return [cls.parse_obj(item) for item in await cls.collection.find(filter).to_list(length=MAX_FIND)]
+
+    @classmethod
     async def find_one(cls, filter: dict):
         try:
             return cls.parse_obj(await cls.collection.find_one(filter))
