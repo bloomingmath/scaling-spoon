@@ -106,3 +106,13 @@ async def signup_post(request: Request, signup_form: SignupForm = Depends(Signup
     else:
         flash(request, "Non è stato possibile creare l'utente. Forse un duplicato?", "warning")
     return RedirectResponse(url="/", status_code=303)
+
+
+@router.post("/subscribe")
+async def user_subscribe(current_user: str = Depends(get_current_user), short: str = Form("")):
+    return RedirectResponse(url="/", status_code=303)
+
+
+@router.post("/unsubscribe")
+async def user_unsubscribe(current_user: str = Depends(get_current_user), short: str = Form("")):
+    return RedirectResponse(url="/", status_code=303)

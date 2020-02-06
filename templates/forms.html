@@ -135,3 +135,25 @@
     </div>
 </form>
 {% endmacro %}
+
+{% macro inline_user_subscribe() %}
+<form class="form-subscribe mb-3" action="{{ url_for('user_subscribe') + '?next=' + url_for('profile') }}"
+      method="post" enctype="application/x-www-form-urlencoded">
+    Entra in un gruppo
+    <div class="form-group flex-grow-1">
+        <input name="short" type="text" class="form-control flex-grow-1 mr-2" placeholder="Gruppo in cui entrare">
+        <button type="submit" class="btn btn-primary form-control">Invia</button>
+    </div>
+</form>
+{% endmacro %}
+
+{% macro inline_user_unsubscribe() %}
+<form class="form-subscribe mb-3" action="{{ url_for('user_unsubscribe') + '?next=' + url_for('profile') }}"
+      method="post" enctype="application/x-www-form-urlencoded">
+    Abbandona un gruppo
+    <div class="form-group flex-grow-1">
+        <input name="short" type="text" class="form-control flex-grow-1 mr-2" placeholder="Gruppo da abbandonare">
+        <button type="submit" class="btn btn-primary form-control">Invia</button>
+    </div>
+</form>
+{% endmacro %}

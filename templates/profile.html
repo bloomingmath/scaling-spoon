@@ -10,6 +10,8 @@
 {% from "macros.html" import username_from_user with context %}
 {% from "forms.html" import inline_user_change_username with context %}
 {% from "forms.html" import inline_user_change_password with context %}
+{% from "forms.html" import inline_user_subscribe with context %}
+{% from "forms.html" import inline_user_unsubscribe with context %}
 <div class="intro bg-light">
     <div class="container">
         <div class="section">
@@ -26,6 +28,14 @@
                 <div class="col-12 col-md-8 offset-md-2">
                     <p>{{ inline_user_change_username(current_user.username) }}</p>
                     <p>{{ inline_user_change_password() }}</p>
+                    <p>
+                        <b>Gruppi di cui fai parte:</b> {% for group in user_groups %}{{ group.short }}{{ "," if not loop.last else "." }}{% else %}nessuno.{% endfor %}
+                        {% if user_groups %}{{ inline_user_unsubscribe() }}{% endif %}
+                    </p>
+                    <p>
+                        <b>Gruppi disponibili:</b> {% for group in other_groups %}{{ group.short }}{{ "," if not loop.last else "." }}{% else %}nessuno.{% endfor %}
+                        {% if user_groups %}{{ inline_user_subscribe() }}{% endif %}
+                    </p>
                 </div>
             </div>
         </div>
