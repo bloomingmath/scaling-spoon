@@ -40,15 +40,16 @@ async def init_testing_database():
 
     inserted_nodes_result = await Node.collection.insert_many([
         {"short": f"node{i}", "contents": [
-            DBRef(**content_1.dict(by_alias=True)).dict(by_alias=True),
-            DBRef(**content_2.dict(by_alias=True)).dict(by_alias=True),
+            # DBRef(**content_1.dict(by_alias=True)).dict(by_alias=True),
+            content_1.dict(by_alias=True),
+            content_2.dict(by_alias=True),
         ]}
         for i in range(10)
     ])
     inserted_nodes_refs = [{"_id": _id, "collection_name": "nodes"} for _id in inserted_nodes_result.inserted_ids]
     inserted_groups_result = (await Group.collection.insert_many([
         {"short": "first", "nodes": inserted_nodes_refs[0:5]},
-        {"short": "second", "nodes": inserted_nodes_refs[3:7]}
+        {"short": "second", "nodes": inserted_nodes_refs[3:97]}
     ]))
     inserted_groups_refs = [{"_id": _id, "collection_name": "groups"} for _id in inserted_groups_result.inserted_ids]
     User.collection.insert_many([

@@ -18,3 +18,15 @@
     </div>
 </nav>
 {% endmacro %}
+
+{% macro username_from_email(email) %}{% set split_email = email.split('@') %}{{ split_email[0] }}{% endmacro %}
+
+{% macro loggedin(current_user) %}
+{% from "links.html" import navlink with context %}
+<ul class="navbar-nav ml-auto">
+    {% if current_user.is_admin %}
+    {{ navlink("dashboard", "tools", "Admin") }}
+    {% endif %}
+    {{ navlink("logout", "sign-out-alt", "Termina") }}
+</ul>
+{% endmacro %}

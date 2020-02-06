@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+
+{% block nav %}
+{% from "macros.html" import navbar with context %}
+{% from "forms.html" import inline_login_form with context %}
+{{ navbar(right_content=inline_login_form()) }}
+{% endblock %}
+
+{% block content %}
+{% from "links.html" import page with context %}
+<div class="intro bg-light">
+    <div class="container">
+        <div class="section">
+            <div class="row">
+                <div class="col-12 col-md-8 offset-md-2">
+                    <p class="lead"><b>Qualcosa non va.</b> Qualcosa non è andato secondo il normale corso degli eventi
+                        e <em>probabilmente</em> è colpa tua. Il programma dice quanto segue.</p>
+                    <blockquote class="blockquote">
+                        <p class="mb-0">{{ detail }}</p>
+                        <footer class="blockquote-footer">Status code {{ status_code }}</footer>
+                    </blockquote>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

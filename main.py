@@ -1,7 +1,7 @@
 from os import getenv
 
 from dotenv import load_dotenv
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 from fastapi.exceptions import RequestValidationError
 from starlette.middleware.sessions import SessionMiddleware
 from starlette.requests import Request
@@ -21,7 +21,6 @@ MONGODB_URI = getenv("MONGODB_URI", "mongodb://localhost:27017")
 app = FastAPI(title="Scaling spoon")
 
 app.mount("/static", StaticFiles(directory="static"), name="static")
-# mongo_engine.init_app(app)
 mongo_engine.init_app(app, uri=MONGODB_URI, env=FASTAPI_ENVIRONMENT)
 render_engine.init_app(app, template_directory="templates")
 signals_engine.init_app(app)
@@ -31,6 +30,14 @@ signals_engine.init_app(app)
 async def validation_exception_handler(request, exc):
     render = get_render()
     return render("request_validation_error.html", {"request": request, "exception": str(exc)})
+
+
+@app.exception_handler(HTTPException)
+async def http_exception_handler(request, exc):
+    render = get_render()
+    print(exc)
+    print(dir(exc))
+    return render("handled_error.html", {"request": request, "detail": exc.detail, "status_code": exc.status_code})
 
 
 @app.exception_handler(Exception)

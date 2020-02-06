@@ -12,6 +12,8 @@ from schemas import SignupForm, LoginForm
 from logging import info
 from pydantic import ValidationError
 
+from .dependencies import get_session_email as get_current_user_email
+
 router = APIRouter()
 
 
@@ -23,13 +25,6 @@ async def get_current_user(request: Request) -> User:
     except KeyError:
         info(f"sessiond dict: {dict(request.session)}")
         raise HTTPException(status_code=403, detail="User is not authenticated.")
-
-
-async def get_current_user_email(request: Request):
-    try:
-        return request.session["authenticated_email"]
-    except KeyError:
-        raise HTTPException(status_code=403, detail="User is not authenticated (email).")
 
 
 @router.post("/change_username")

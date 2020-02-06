@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+
+{% block nav %}
+{% from "macros.html" import navbar with context %}
+{% from "forms.html" import inline_login_form with context %}
+{{ navbar(right_content=inline_login_form()) }}
+{% endblock %}
+
+{% block content %}
+{% from "links.html" import page with context %}
+<div class="intro bg-light">
+    <div class="container">
+        <div class="section">
+            <div class="row">
+                <div class="col-12 col-md-8 offset-md-2">
+                    <p class="lead"><b>Benvenut@ Eternauta.</b> Se hai già un profilo per usare l'applicazione {{
+                        page('login_get', 'accedi') }} con le tue credenziali. Se non hai ancora un profilo {{
+                        page('signup_get', 'registrati') }} e comincia ad usare l'applicazione.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

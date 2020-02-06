@@ -4,6 +4,7 @@ from typing import Callable, List, Optional
 
 from fastapi import FastAPI
 from starlette.templating import Jinja2Templates
+from starlette.responses import HTMLResponse
 
 
 class RenderEngine:
@@ -28,8 +29,8 @@ def get_render() -> Callable:
             try:
                 return j2t.TemplateResponse(*args, **kwargs)
             except Exception as exc:
-                warning(f"render function {type(exc)}", exc_info=True)
-        else:
-            error("render function -- No templates engine provided.")
+                warning(f"Render function -- {type(exc)}", exc_info=True)
+        error("render function -- No valid templates engine provided.")
+        return HTMLResponse('<html><body><h1 style="text-align: center;margin-top: 40px;">Rendering engine error</h1></body></html>')
 
     return render

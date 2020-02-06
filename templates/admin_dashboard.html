@@ -1,0 +1,104 @@
+{% extends "base.html" %}
+
+{% block nav %}
+{% from "macros.html" import navbar with context %}
+{% from "macros.html" import loggedin with context %}
+{{ navbar(right_content=loggedin(current_user)) }}
+{% endblock %}
+
+{% block content %}
+{% from "macros.html" import username_from_email with context %}
+{% from "forms.html" import inline_admin_toggle_block with context %}
+{% from "forms.html" import inline_admin_reset_password with context %}
+{% from "forms.html" import inline_admin_create_group with context %}
+{% from "forms.html" import inline_admin_create_user with context %}
+{% from "forms.html" import inline_admin_toggle_node with context %}
+{% from "forms.html" import inline_admin_toggle_group with context %}
+<div class="intro bg-light">
+    <div class="container">
+        <div class="section">
+            <div class="row">
+                <div class="col-12 col-md-8 forced-scroll">
+                    <h3>Groups</h3>
+                    <ol>
+                        {% for group in groups_list %}
+                        <li>
+                            <p>{{ group.short }} <i class="fas fa-arrow-alt-circle-right"></i>
+                                {% for node in group.nodes %}
+                                <span>{{ node.short }}{{ "," if not loop.last }}</span>
+                                {% endfor %}
+                            </p>
+                        </li>
+                        {% endfor %}
+                    </ol>
+                </div>
+                <div class="col-12 col-md-4">
+                    <div class="card forced-scroll">
+                        <div class="card-body bg-light">
+                            {{ inline_admin_create_group() }}
+                            {{ inline_admin_toggle_node() }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="section">
+                <div class="row">
+                    <div class="col-12 col-md-8 forced-scroll">
+                        <h3>Users</h3>
+                        <ol>
+                            {% for user in users_list %}
+                            <li>
+                                <p>{% if user.is_blocked %}<strike>{% endif %}{{ user.email }} <i class="fas fa-arrow-alt-circle-right"></i>
+                                    {% for group in user.groups %}
+                                    <span>{{ group.short }}{{ "," if not loop.last }}</span>
+                                    {% endfor %}
+                                    <a href="{{ url_for('admin_reset_password') + '?email=' + user.email + '&next=/admin' }}">reset
+                                        password</a>
+                                    {% if user.is_blocked %}</strike>{% endif %}
+                                </p>
+                            </li>
+                            {% endfor %}
+                        </ol>
+                    </div>
+                    <div class="col-12 col-md-4">
+                        <div class="card forced-scroll">
+                            <div class="card-body bg-light">
+                                {{ inline_admin_create_user() }}
+                                {{ inline_admin_toggle_block() }}
+                                {{ inline_admin_reset_password() }}
+                                {{ inline_admin_toggle_group() }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="section">
+                <div class="row">
+                    <div class="col-12 col-md-8 forced-scroll">
+                        <h3>Nodes</h3>
+                        <ol>
+                            {% for node in nodes_list %}
+                            <li>
+                                <p>
+                                    {{ node.short }}
+                                    {{ node.contents }}
+                                    ({% for content in node.contents %}{{ content.short }}
+                                    <small class="text-muted">{{ content.filetype }}</small>
+                                    {{ "," if not loop.last }}{% endfor %})
+                                </p>
+                            </li>
+                            {% endfor %}
+                        </ol>
+                    </div>
+                    <div class="col-12 col-md-4">
+                        <div class="card forced-scroll">
+                            <div class="card-body bg-light">
+                                actions
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endblock %}

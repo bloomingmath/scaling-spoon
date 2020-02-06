@@ -14,15 +14,15 @@
 {% endmacro %}
 
 {% macro inline_login_form() %}
-<form class="form-subscribe form-inline mb-3" action="{{ url_for('login_post') }}" method="post"
+<form class="form-subscribe form-inline mt-2 mt-lg-0" action="{{ url_for('login_post') }}" method="post"
       enctype="application/x-www-form-urlencoded">
     <div class="form-group flex-grow-1">
-        <input name="email" type="email" class="form-control form-control-lg flex-grow-1 mr-2"
+        <input name="email" type="email" class="form-control flex-grow-1 mr-2"
                id="inline_login_form_email" placeholder="Email" autofocus>
-        <input name="password" type="password" class="form-control form-control-lg flex-grow-1 mr-2"
+        <input name="password" type="password" class="form-control flex-grow-1 mr-2"
                id="inline_login_form_password" placeholder="Password">
+        <button type="submit" class="btn btn-primary form-control">Accedi</button>
     </div>
-    <button type="submit" class="btn btn-primary btn-lg mt-0 mt-md-3 mt-lg-0">Accedi</button>
 </form>
 {% endmacro %}
 
@@ -43,5 +43,70 @@
                placeholder="Ripeti password">
     </div>
     <button type="submit" class="btn btn-block btn-primary">Registrati</button>
+</form>
+{% endmacro %}
+
+{% macro inline_admin_toggle_block() %}
+<form class="form-subscribe mt-2 mt-lg-0" action="{{ url_for('admin_toggle_block') + '?next=/admin' }}" method="post"
+      enctype="application/x-www-form-urlencoded">
+    Toggle user's block
+    <div class="form-group flex-grow-1">
+        <input name="user_email" type="email" class="form-control flex-grow-1 mr-2"
+               id="tiled_signup_form_email" placeholder="user email" >
+    </div>
+</form>
+{% endmacro %}
+
+{% macro inline_admin_reset_password() %}
+<form class="form-subscribe mt-2 mt-lg-0" action="{{ url_for('admin_reset_password') + '?next=/admin' }}" method="post"
+      enctype="application/x-www-form-urlencoded">
+    Reset user's password to 'pass'
+    <div class="form-group flex-grow-1">
+        <input name="user_email" type="email" class="form-control flex-grow-1 mr-2" placeholder="user email" >
+    </div>
+</form>
+{% endmacro %}
+
+{% macro inline_admin_create_group() %}
+<form class="form-subscribe mb-3" action="{{ url_for('admin_create_group') + '?next=/admin' }}" method="post"
+      enctype="application/x-www-form-urlencoded">
+    Create group
+    <div class="form-group flex-grow-1">
+        <input name="short" type="text" class="form-control flex-grow-1 mr-2" placeholder="new group short">
+    </div>
+</form>
+{% endmacro %}
+
+{% macro inline_admin_create_user() %}
+<form class="form-subscribe mb-3" action="{{ url_for('admin_create_user') + '?next=/admin' }}" method="post"
+      enctype="application/x-www-form-urlencoded">
+    Create user
+    <div class="form-group flex-grow-1">
+        <input name="user_email" type="text" class="form-control flex-grow-1 mr-2" placeholder="new user email">
+    </div>
+</form>
+{% endmacro %}
+
+{% macro inline_admin_toggle_node() %}
+<form class="form-subscribe mb-3" action="{{ url_for('admin_toggle_node') + '?next=/admin' }}" method="post"
+      enctype="application/x-www-form-urlencoded">
+    Toggle node
+    <div class="form-group flex-grow-1">
+        <input name="group_short" type="text" class="form-control flex-grow-1 mr-2" placeholder="group short">
+        <input name="node_short" type="text" class="form-control flex-grow-1 mr-2" placeholder="node short">
+        <button type="submit" class="btn btn-primary form-control d-none">Submit</button>
+    </div>
+</form>
+{% endmacro %}
+
+{% macro inline_admin_toggle_group() %}
+<form class="form-subscribe mb-3" action="{{ url_for('admin_toggle_group') + '?next=/admin' }}" method="post"
+      enctype="application/x-www-form-urlencoded">
+    Toggle group
+    <div class="form-group flex-grow-1">
+        <input name="user_email" type="text" class="form-control flex-grow-1 mr-2" placeholder="email">
+        <input name="group_short" type="text" class="form-control flex-grow-1 mr-2" placeholder="group short">
+        <button type="submit" class="btn btn-primary form-control d-none">Submit</button>
+    </div>
 </form>
 {% endmacro %}

@@ -7,9 +7,10 @@ from starlette.responses import RedirectResponse
 from extensions.rendering import get_render
 from extensions.security import get_password_hash
 from extensions.signals import flash, get_message_flashes
-from models import User, Group
+from models import User, Group, Node, DBRef
 from schemas import SignupForm, LoginForm
 from logging import info
+from pprint import pformat, pprint
 
 router = APIRouter()
 
@@ -70,7 +71,102 @@ async def dashboard(request: Request,
                     admin: User = Depends(get_current_admin),
                     render: Callable = Depends(get_render)):
     context = {"flashes": flashes, "request": request, "current_user": admin}
+    context["users_list"] = [await User.parse_obj(db_user).unshallow(level=3) for db_user in
+                             await User.collection.find().to_list(length=500)]
+    context["groups_list"] = [
+        await Group.parse_obj(db_group).unshallow(level=2) for db_group in
+        await Group.collection.find().to_list(length=500)
+    ]
+    context["nodes_list"] = [
+        await Node.parse_obj(db_node).unshallow(level=1) for db_node in
+        await Node.collection.find().to_list(length=500)
+    ]
+    pprint(context)
     return render("admin_dashboard.html", context)
+
+
+@router.post("/reset_password")
+async def admin_reset_password(request: Request, user_email: str = Form(...), admin: User = Depends(get_current_admin)):
+    await User.collection.find_one_and_update(
+        filter={"email": user_email},
+        update={"$set": {"password_hash": get_password_hash("pass")}}
+    )
+    return RedirectResponse(url="/", status_code=303)
+
+
+@router.post("/toggle_block")
+async def admin_toggle_block(request: Request, user_email: str = Form(...), admin: User = Depends(get_current_admin)):
+    db_user = await User.collection.find_one({"email": user_email})
+    if db_user is None:
+        flash(request, f"L'utente {user_email} non esiste.", "warning")
+    else:
+        user = User.parse_obj(db_user)
+        await User.collection.find_one_and_update(
+            filter={"email": user_email},
+            update={"$set": {"is_blocked": (False if user.is_blocked else True)}}
+        )
+    return RedirectResponse(url="/", status_code=303)
+
+
+@router.post("/create_group")
+async def admin_create_group(request: Request, short: str = Form(...), admin: User = Depends(get_current_admin)):
+    db_group = await Group.collection.find_one({"short": short})
+    if db_group is not None:
+        flash(request, f"Il gruppo {short} esiste già.", "warning")
+    else:
+        await Group.collection.insert_one({
+            "short": short,
+            "nodes": [],
+        })
+    return RedirectResponse(url="/", status_code=303)
+
+
+@router.post("/create_user")
+async def admin_create_user(request: Request, user_email: str = Form(...), admin: User = Depends(get_current_admin)):
+    db_user = await User.collection.find_one({"email": user_email})
+    if db_user is not None:
+        flash(request, f"L'utente {user_email} esiste già.", "warning")
+    else:
+        await User.collection.insert_one({
+            "email": user_email,
+            "password_hash": get_password_hash("pass"),
+            "username": "",
+            "groups": [],
+        })
+    return RedirectResponse(url="/", status_code=303)
+
+
+@router.post("/toggle_node")
+async def admin_toggle_node(node_short: str = Form(...), group_short: str = Form(...),
+                            admin: User = Depends(get_current_admin)):
+    group = Group.parse_obj(await Group.collection.find_one({"short": group_short}))
+    node_ref = DBRef.from_orm(Node.parse_obj(await Node.collection.find_one({"short": node_short})))
+    if node_ref in group.nodes:
+        nodes = [ref for ref in group.nodes if ref != node_ref]
+    else:
+        nodes = [node_ref] + group.nodes
+    await Group.collection.find_one_and_update(
+        filter={"short": group_short},
+        update={"$set": {"nodes": nodes}}
+    )
+    return RedirectResponse(url="/", status_code=303)
+
+
+@router.post("/toggle_group")
+async def admin_toggle_group(user_email: str = Form(...), group_short: str = Form(...),
+                            admin: User = Depends(get_current_admin)):
+    group = Group.parse_obj(await Group.collection.find_one({"short": group_short}))
+    user = User.parse_obj(await User.collection.find_one({"email": user_email}))
+    group_ref = DBRef.from_orm(group)
+    if group_ref in user.groups:
+        groups = [ref for ref in user.groups if ref != group_ref]
+    else:
+        groups = [group_ref] + user.groups
+    await User.collection.find_one_and_update(
+        filter={"email": user_email},
+        update={"$set": {"groups": groups}}
+    )
+    return RedirectResponse(url="/", status_code=303)
 
 
 @router.get("/users")
