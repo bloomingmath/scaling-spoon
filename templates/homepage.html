@@ -9,26 +9,34 @@
 {% block content %}
 {% from "macros.html" import username_from_user with context %}
 {% from "links.html" import page with context %}
+{% from "links.html" import link with context %}
+
 <div class="intro bg-light">
     <div class="container">
         <div class="section">
             <div class="row">
                 <div class="col-12 col-md-8 offset-md-2">
-                    <p class="lead"><b>Benvenut@ {{ username_from_user(current_user) }}.</b> Se vuoi modificare alcuni dati del tuo {{ page("profile", "profilo") }}, accedi alla pagina dedicata.</p>
+                    <p class="lead"><b>Benvenut@ {{ username_from_user(current_user) }}.</b> Se vuoi modificare alcuni
+                        dati del tuo {{ page("profile", "profilo") }}, accedi alla pagina dedicata. Di seguito i
+                        materiali ai quali puoi accedere.</p>
                 </div>
             </div>
         </div>
         <div class="section">
             <div class="row">
                 <div class="col-12 col-md-8 offset-md-2">
-                    <p>{{ current_user }}</p>
-                </div>
-            </div>
-        </div>
-        <div class="section">
-            <div class="row">
-                <div class="col-12 col-md-8 offset-md-2">
-                    <pre>{{ extra|safe }}</pre>
+                    {% for node in nodes %}
+                    {% if node.contents %}
+                    <details>
+                        <summary>{{ node.short }}</summary>
+                        <ul>
+                            {% for content in node.contents %}
+                            <li>{{ content.short }} {{ link(url_for("read_content", content_id=content.id), "leggi") }}</li>
+                            {% endfor %}
+                        </ul>
+                    </details>
+                    {% endif %}
+                    {% endfor %}
                 </div>
             </div>
         </div>

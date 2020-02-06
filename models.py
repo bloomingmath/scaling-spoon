@@ -1,4 +1,4 @@
-from typing import List, Optional
+from typing import List, Optional, Union
 
 from bson import ObjectId
 from bson.errors import InvalidId
@@ -9,6 +9,7 @@ from pydantic.main import ModelMetaclass
 
 from extensions.mongo import mongo_engine, AsyncIOMotorCollection
 from extensions.security import verify_password
+from pprint import pprint
 
 MAX_FIND = 500
 
@@ -27,16 +28,6 @@ def get_id(obj):
                     return ObjectId(obj["_id"])
                 except (InvalidId, TypeError, KeyError):
                     raise TypeError(f"Can't find id in {obj!r}.")
-
-
-def get_cn(obj):
-    try:
-        return obj.collection_name
-    except AttributeError:
-        try:
-            return obj["collection_name"]
-        except KeyError:
-            raise TypeError(f"Cant' find collection_name in {obj!r}.")
 
 
 class ObjectIdStr(str):
@@ -84,9 +75,13 @@ class Model(BaseModel, metaclass=ObjectsProperty):
     async def insert_one(cls, obj: dict):
         await cls.collection.insert_one(obj)
 
+    @classmethod
+    async def delete_one(cls, filter: dict):
+        await cls.collection.delete_one(filter)
+
 
 class Content(Model):
-    collection_name: str = "content"
+    collection_name: str = "contents"
     short: str
     filetype: str
 
@@ -94,40 +89,48 @@ class Content(Model):
 class Group(Model):
     collection_name: str = "groups"
     short: str
-    nodes: List[Model]
+    nodes: List[Union["Node", ObjectIdStr]]
 
     @classmethod
     async def find_by_user(cls, user: "User") -> List["Group"]:
-        return await cls.collection.find({"_id": {"$in": [group.id for group in user.groups]}}).to_list(length=MAX_FIND)
+        return await cls.collection.find({"_id": {"$in": user.groups}}).to_list(length=MAX_FIND)
 
     @classmethod
     async def find_by_not_user(cls, user: "User") -> List["Group"]:
-        return await cls.collection.find({"_id": {"$nin": [group.id for group in user.groups]}}).to_list(length=MAX_FIND)
+        return await cls.collection.find({"_id": {"$nin": user.groups}}).to_list(length=MAX_FIND)
+
+    @classmethod
+    async def find_with_complete_nodes(cls) -> List["Group"]:
+        return [Group.parse_obj(item) for item in await Group.collection.aggregate([
+            {"$match": {}},
+            {"$lookup": {"from": "nodes", "localField": "nodes", "foreignField": "_id", "as": "nodes"}},
+        ]).to_list(length=MAX_FIND)]
 
 
 class Node(Model):
     collection_name: str = "nodes"
     short: str
-    contents: List[Model]
+    contents: List[Union["Content", ObjectIdStr]]
 
     @classmethod
     async def find_by_groups(cls, groups: list) -> List["Node"]:
-        db_models = []
-        for item in groups:
-            try:
-                assert get_cn(item) == "groups"
-                db_models.append({"id": get_id(item), "collection_name": get_cn(item)})
-            except (AssertionError, TypeError):
-                pass
+        group_ids = [get_id(item) for item in groups]
         return [Node.parse_obj(item) for item in await Group.collection.aggregate([
-            {"$match": {"_id": {"$in": [model["id"] for model in db_models]}}},
+            {"$match": {"_id": {"$in": group_ids}}},
             {"$unwind": {"path": "$nodes"}},
-            {"$group": {"_id": None, "all_nodes": {"$push": "$nodes._id"}}},
+            {"$group": {"_id": None, "all_nodes": {"$push": "$nodes"}}},
             {"$lookup": {"from": "nodes", "localField": "all_nodes", "foreignField": "_id", "as": "nodes"}},
             {"$unwind": {"path": "$nodes"}},
             {"$replaceRoot": {"newRoot": "$nodes"}},
-            {"$lookup": {"from": "fs.files", "localField": "contents._id", "foreignField": "_id", "as": "contents"}},
-            {"$addFields": {"contents": "$contents.metadata"}},
+            {"$lookup": {"from": "fs.files", "localField": "contents", "foreignField": "_id", "as": "contents"}},
+            {"$addFields": {"contents": "$contents.metadata"}}
+        ]).to_list(length=MAX_FIND)]
+
+    @classmethod
+    async def find_with_complete_contents(cls) -> List["Node"]:
+        return [Node.parse_obj(item) for item in await Node.collection.aggregate([
+            {"$match": {}},
+            {"$lookup": {"from": "contents", "localField": "contents", "foreignField": "_id", "as": "contents"}},
         ]).to_list(length=MAX_FIND)]
 
 
@@ -136,9 +139,16 @@ class User(Model):
     email: EmailStr
     password_hash: str
     username: str
-    groups: List[Model]
+    groups: List[Union["Group", ObjectIdStr]]
     is_admin: bool = False
     is_blocked: bool = False
 
     def authenticate(self, password: str) -> bool:
         return verify_password(password, self.password_hash)
+
+    @classmethod
+    async def find_with_complete_groups(cls) -> List["User"]:
+        return [User.parse_obj(item) for item in await User.collection.aggregate([
+            {"$match": {}},
+            {"$lookup": {"from": "groups", "localField": "groups", "foreignField": "_id", "as": "groups"}},
+        ]).to_list(length=MAX_FIND)]

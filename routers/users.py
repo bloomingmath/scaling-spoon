@@ -109,10 +109,20 @@ async def signup_post(request: Request, signup_form: SignupForm = Depends(Signup
 
 
 @router.post("/subscribe")
-async def user_subscribe(current_user: str = Depends(get_current_user), short: str = Form("")):
+async def user_subscribe(current_user: User = Depends(get_current_user), short: str = Form("")):
+    group = await Group.find_one({"short": short})
+    await User.find_one_and_set(
+        filter={"_id": current_user.id},
+        set={"groups": list(set(current_user.groups).union({group.id}))}
+    )
     return RedirectResponse(url="/", status_code=303)
 
 
 @router.post("/unsubscribe")
-async def user_unsubscribe(current_user: str = Depends(get_current_user), short: str = Form("")):
+async def user_unsubscribe(current_user: User = Depends(get_current_user), short: str = Form("")):
+    group = await Group.find_one({"short": short})
+    await User.find_one_and_set(
+        filter={"_id": current_user.id},
+        set={"groups": list(set(current_user.groups).difference({group.id}))}
+    )
     return RedirectResponse(url="/", status_code=303)

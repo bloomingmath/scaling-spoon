@@ -116,7 +116,8 @@
       method="post" enctype="application/x-www-form-urlencoded">
     Cambia nome utente
     <div class="form-group flex-grow-1">
-        <input name="username" type="text" class="form-control flex-grow-1 mr-2" placeholder="Il tuo nome" value="{{ username }}">
+        <input name="username" type="text" class="form-control flex-grow-1 mr-2" placeholder="Il tuo nome"
+               value="{{ username }}">
         <button type="submit" class="btn btn-primary form-control">Invia</button>
     </div>
 </form>
@@ -130,14 +131,15 @@
         <input name="email" type="email" class="form-control flex-grow-1 mr-2" placeholder="Indirizzo email">
         <input name="old_password" type="password" class="form-control flex-grow-1 mr-2" placeholder="Vecchia password">
         <input name="password" type="password" class="form-control flex-grow-1 mr-2" placeholder="Nuova password">
-        <input name="password_confirmation" type="password" class="form-control flex-grow-1 mr-2" placeholder="Conferma nuova password">
+        <input name="password_confirmation" type="password" class="form-control flex-grow-1 mr-2"
+               placeholder="Conferma nuova password">
         <button type="submit" class="btn btn-primary form-control">Invia</button>
     </div>
 </form>
 {% endmacro %}
 
 {% macro inline_user_subscribe() %}
-<form class="form-subscribe mb-3" action="{{ url_for('user_subscribe') + '?next=' + url_for('profile') }}"
+<form class="form-subscribe mb-3" action="{{ url_for('user_subscribe') }}?next=/users/profile"
       method="post" enctype="application/x-www-form-urlencoded">
     Entra in un gruppo
     <div class="form-group flex-grow-1">
@@ -148,12 +150,55 @@
 {% endmacro %}
 
 {% macro inline_user_unsubscribe() %}
-<form class="form-subscribe mb-3" action="{{ url_for('user_unsubscribe') + '?next=' + url_for('profile') }}"
+<form class="form-subscribe mb-3" action="{{ url_for('user_unsubscribe') }}?next=/users/profile"
       method="post" enctype="application/x-www-form-urlencoded">
     Abbandona un gruppo
     <div class="form-group flex-grow-1">
         <input name="short" type="text" class="form-control flex-grow-1 mr-2" placeholder="Gruppo da abbandonare">
         <button type="submit" class="btn btn-primary form-control">Invia</button>
+    </div>
+</form>
+{% endmacro %}
+
+{% macro inline_admin_create_node() %}
+<form class="form-subscribe mb-3" action="{{ url_for('admin_create_node') }}?next=/admin" method="post"
+      enctype="application/x-www-form-urlencoded">
+    Create node
+    <div class="form-group flex-grow-1">
+        <input name="node_short" type="text" class="form-control flex-grow-1 mr-2" placeholder="new node short">
+    </div>
+</form>
+{% endmacro %}
+
+{% macro inline_admin_delete_node() %}
+<form class="form-subscribe mb-3" action="{{ url_for('admin_delete_node') }}?next=/admin" method="post"
+      enctype="application/x-www-form-urlencoded">
+    Delete node
+    <div class="form-group flex-grow-1">
+        <input name="node_short" type="text" class="form-control flex-grow-1 mr-2" placeholder="node short to delete">
+    </div>
+</form>
+{% endmacro %}
+
+{% macro inline_admin_toggle_content() %}
+<script>
+function dodrop(event)
+{
+    console.log(event);
+    console.log(event.dataTransfer.getData('content_id'));
+    event.target.value = event.dataTransfer.getData('content_id');
+
+}
+</script>
+<form class="form-subscribe mb-3" action="{{ url_for('admin_toggle_content') }}?next=/admin" method="post"
+      enctype="application/x-www-form-urlencoded">
+    Toggle content in node
+    <div class="form-group flex-grow-1">
+        <input name="node_short" type="text" class="form-control flex-grow-1 mr-2" placeholder="node short">
+        <input name="content_id_str" type="text" class="form-control flex-grow-1 mr-2" placeholder="content id"
+               ondragover="event.stopPropagation(); event.preventDefault();"
+               ondrop="event.stopPropagation(); event.preventDefault(); dodrop(event);">
+        <button type="submit" class="btn btn-primary form-control d-none">Submit</button>
     </div>
 </form>
 {% endmacro %}

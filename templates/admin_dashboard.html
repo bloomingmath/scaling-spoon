@@ -23,7 +23,7 @@
                     <ol>
                         {% for group in groups_list %}
                         <li>
-                            <p>{{ group.short }} <i class="fas fa-arrow-alt-circle-right"></i>
+                            <p><b>{{ group.short }}: </b>
                                 {% for node in group.nodes %}
                                 <span>{{ node.short }}{{ "," if not loop.last }}</span>
                                 {% endfor %}
@@ -48,12 +48,12 @@
                         <ol>
                             {% for user in users_list %}
                             <li>
-                                <p>{% if user.is_blocked %}<strike>{% endif %}{{ user.email }} <i class="fas fa-arrow-alt-circle-right"></i>
+                                <p>
+                                    {% if user.is_blocked %}<strike>{% endif %}
+                                    <b>{{ user.email }}: </b>
                                     {% for group in user.groups %}
                                     <span>{{ group.short }}{{ "," if not loop.last }}</span>
                                     {% endfor %}
-                                    <a href="{{ url_for('admin_reset_password') + '?email=' + user.email + '&next=/admin' }}">reset
-                                        password</a>
                                     {% if user.is_blocked %}</strike>{% endif %}
                                 </p>
                             </li>
@@ -80,11 +80,11 @@
                             {% for node in nodes_list %}
                             <li>
                                 <p>
-                                    {{ node.short }}
-                                    {{ node.contents }}
-                                    ({% for content in node.contents %}{{ content.short }}
-                                    <small class="text-muted">{{ content.filetype }}</small>
-                                    {{ "," if not loop.last }}{% endfor %})
+                                    <b>{{ node.short }}: </b>
+                                    {% for content in node.contents %}
+                                    <u draggable="true" ondragstart="event.dataTransfer.setData('content_id', '{{ content.id }}');">{{ content.short }}<small class="text-muted">{{ content.filetype }}</small></u>
+                                    {{ "," if not loop.last }}
+                                    {% endfor %}
                                 </p>
                             </li>
                             {% endfor %}
@@ -93,7 +93,12 @@
                     <div class="col-12 col-md-4">
                         <div class="card forced-scroll">
                             <div class="card-body bg-light">
-                                actions
+                                {% from "forms.html" import inline_admin_create_node with context %}
+                                {% from "forms.html" import inline_admin_delete_node with context %}
+                                {% from "forms.html" import inline_admin_toggle_content with context %}
+                                {{ inline_admin_create_node() }}
+                                {{ inline_admin_delete_node() }}
+                                {{ inline_admin_toggle_content() }}
                             </div>
                         </div>
                     </div>

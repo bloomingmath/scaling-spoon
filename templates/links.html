@@ -13,6 +13,12 @@
 </a>
 {% endmacro %}
 
+{% macro link(url=None, text=None) %}
+<a href="{% if url %}{{ url }}{% else %}/{% endif %}">
+    {% if text %}{{ text }}{% else %}lank{% endif %}
+</a>
+{% endmacro %}
+
 {% macro navlink(endpoint, icon, text) %}
 <li class="nav-item">
     <a class="nav-link" href="{{ url_for(endpoint) }}">

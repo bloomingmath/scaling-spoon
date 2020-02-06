@@ -23,8 +23,7 @@ async def home(request: Request, flashes: list = Depends(get_message_flashes), r
         assert current_user is not None
         context["session_email"] = session_email
         context["current_user"] = current_user
-        nodes: List[Node] = await Node.find_by_groups(current_user.groups)
-        context["extra"] = pformat(nodes)
+        context["nodes"] = await Node.find_by_groups(current_user.groups)
         return render("homepage.html", context)
     except AssertionError:
         return render("landing.html", context)

@@ -34,7 +34,7 @@
                     </p>
                     <p>
                         <b>Gruppi disponibili:</b> {% for group in other_groups %}{{ group.short }}{{ "," if not loop.last else "." }}{% else %}nessuno.{% endfor %}
-                        {% if user_groups %}{{ inline_user_subscribe() }}{% endif %}
+                        {% if other_groups %}{{ inline_user_subscribe() }}{% endif %}
                     </p>
                 </div>
             </div>
